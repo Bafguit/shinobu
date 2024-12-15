@@ -1673,9 +1673,10 @@ void OS_Windows::run() {
 
 	while(true) {
 		bool should_return = false;
+		bool quit_after_timeout = false;
 		bool exit = false;
 
-		exit = Main::iteration_pre(&should_return);
+		exit = Main::iteration_pre(&should_return, &quit_after_timeout);
 		if(should_return && exit)
 			break;
 
@@ -1685,7 +1686,7 @@ void OS_Windows::run() {
 			OS::delay_usec(1);
 		}
 
-		exit = Main::iteration_post();
+		exit = Main::iteration_post(exit, quit_after_timeout);
 		if(exit)
 			break;
 	}

@@ -80,8 +80,8 @@ public:
 #endif
 	static int start();
 
-	static bool iteration_pre();
-	static bool iteration_post();
+	static bool iteration_pre(bool &should_return, bool &quit_after_timeout);
+	static bool iteration_post(bool exit, bool quit_after_timeout);
 	
 	static bool iteration();
 	static void force_redraw();

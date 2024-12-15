@@ -4009,7 +4009,7 @@ static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
 
-bool Main::iteration_pre(bool &should_return) {
+bool Main::iteration_pre(bool &should_return, bool &quit_after_timeout) {
 	iterating++;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
@@ -4190,7 +4190,7 @@ bool Main::iteration_pre(bool &should_return) {
 	}
 
 #ifdef TOOLS_ENABLED
-	bool quit_after_timeout = false;
+	quit_after_timeout = false;
 #endif
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
 #ifdef TOOLS_ENABLED
@@ -4214,7 +4214,7 @@ bool Main::iteration_pre(bool &should_return) {
 
 	//OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
 
-bool Main::iteration_post() {
+bool Main::iteration_post(bool exit, bool quit_after_timeout) {
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
 		auto_build_solutions = false;
@@ -4246,6 +4246,7 @@ bool Main::iteration_post() {
 // to be set explicitly here (defaults to EXIT_SUCCESS).
 bool Main::iteration() {
 	bool should_return = false;
+	bool quit_after_timeout = false;
 	bool exit = false;
 
 	exit = Main::iteration_pre(&should_return);
@@ -4254,7 +4255,7 @@ bool Main::iteration() {
 
 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
 
-	exit = Main::iteration_post();
+	exit = Main::iteration_post(exit, quit_after_timeout);
 	return exit;
 }
 
