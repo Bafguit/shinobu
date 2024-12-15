@@ -32,7 +32,6 @@
 
 #include "os_windows.h"
 #include "wgl_detect_version.h"
-#include "chrono"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -3014,7 +3013,7 @@ void DisplayServerWindows::process_events() {
 	if (!drop_events && joypad) {
 		joypad->process_joypads();
 	}
-
+/*
 	_THREAD_SAFE_LOCK_
 	MSG msg = {};
 
@@ -3023,7 +3022,7 @@ void DisplayServerWindows::process_events() {
 		DispatchMessageW(&msg);
 	}
 	_THREAD_SAFE_UNLOCK_
-
+*/
 #ifdef SDL_ENABLED
 	if (!drop_events && joypad_sdl) {
 		joypad_sdl->process_events();
@@ -4059,7 +4058,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
-							ke.timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
+							ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
@@ -4972,7 +4971,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
+			ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
