@@ -697,10 +697,10 @@ void Wait(DWORD dwMillisecond) {
 
 	while(GetTickCount() - dwStart < dwMillisecond) {
 		_THREAD_SAFE_LOCK_
-		
+
 		msg = {};
 
-		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
