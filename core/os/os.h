@@ -39,6 +39,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
+#include "servers/display_server.h"
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -234,8 +235,7 @@ public:
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual double get_unix_time() const;
 
-	virtual void OS::set_input_update_function(void (*update_function)());
-	virtual void OS::delay_with_event_handling(uint64_t interval);
+	virtual void delay_with_event_handling(uint64_t interval);
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
 	virtual void add_frame_delay(bool p_can_draw);

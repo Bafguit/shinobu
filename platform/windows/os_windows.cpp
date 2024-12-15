@@ -1660,10 +1660,9 @@ void OS_Windows::run() {
 	}
 
 	main_loop->initialize();
-	OS::set_input_update_function(DisplayServer::get_singleton()->process_events);
 
 	while (true) {
-		//DisplayServer::get_singleton()->process_events(); // get rid of pending events
+		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 		if (Main::iteration()) {
 			break;
 		}

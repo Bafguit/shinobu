@@ -579,20 +579,10 @@ void OS::close_midi_inputs() {
 	}
 }
 
-void (*OS::input_update_function)() = NULL;
-
-void OS::set_input_update_function(void (*update_function)()) {
-	OS::input_update_function = update_function;
-}
-
 void OS::delay_with_event_handling(uint64_t interval) {
-	if(OS::input_update_function) {
-		for (int i = 0; i < interval / 1000; i++) {
-			delay_usec(0);
-			OS::input_update_function()
-		}
-	} else {
-		delay_usec(interval);
+	for (int i = 0; i < interval / 1000; i++) {
+		delay_usec(0);
+		DisplayServer::get_singleton()->process_events()
 	}
 }
 
