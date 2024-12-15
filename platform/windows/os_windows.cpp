@@ -690,14 +690,31 @@ double OS_Windows::get_unix_time() const {
 	return (double)(ticks_time - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
 }
 
+void Wait(DWORD dwMillisecond) {
+	MSG msg;
+	DWORD dwStart;
+	dwStart = GetTickCount();
+
+	while(GetTickCount() - dwStart < dwMillisecond) {
+		_THREAD_SAFE_LOCK_
+		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		_THREAD_SAFE_UNLOCK_
+	}
+}
+
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	//if (p_usec < 1000) {
-	//	Sleep(1);
-	//} else {
-	//	Sleep(p_usec / 1000);
-	//}
-	std::chrono::microseconds duration(p_usec);
-	std::this_thread::sleep_for(duration);
+	if (p_usec < 1000) {
+		//Sleep(1);
+		Wait(1);
+	} else {
+		//Sleep(p_usec / 1000);
+		Wait(p_usec / 1000);
+	}
+	//std::chrono::microseconds duration(p_usec);
+	//std::this_thread::sleep_for(duration);
 }
 
 uint64_t OS_Windows::get_ticks_usec() const {
