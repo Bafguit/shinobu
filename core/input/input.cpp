@@ -588,6 +588,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			touch_event->set_timestamp(mb->get_timestamp());
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
 			_THREAD_SAFE_LOCK_
@@ -662,6 +663,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_canceled(st->is_canceled());
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
+				button_event->set_timestamp(st->get_timestamp());
 
 				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
