@@ -35,6 +35,7 @@
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
+#include "chrono"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
@@ -690,11 +691,13 @@ double OS_Windows::get_unix_time() const {
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	if (p_usec < 1000) {
-		Sleep(1);
-	} else {
-		Sleep(p_usec / 1000);
-	}
+	//if (p_usec < 1000) {
+	//	Sleep(1);
+	//} else {
+	//	Sleep(p_usec / 1000);
+	//}
+	std::chrono::microseconds duration(p_usec);
+	std::this_thread::sleep_for(duration);
 }
 
 uint64_t OS_Windows::get_ticks_usec() const {
