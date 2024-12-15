@@ -579,6 +579,23 @@ void OS::close_midi_inputs() {
 	}
 }
 
+void (*OS::input_update_function)() = NULL;
+
+void OS::set_input_update_function(void (*update_function)()) {
+	OS::input_update_function = update_function;
+}
+
+void OS::delay_with_event_handling(uint64_t interval) {
+	if(OS::input_update_function) {
+		for (int i = 0; i < interval / 1000; i++) {
+			delay_usec(0);
+			OS::input_update_function()
+		}
+	} else {
+		delay_usec(interval);
+	}
+}
+
 void OS::add_frame_delay(bool p_can_draw) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
@@ -606,7 +623,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 		uint64_t current_ticks = get_ticks_usec();
 
 		if (current_ticks < target_ticks) {
-			delay_usec(target_ticks - current_ticks);
+			OS::delay_with_event_handling(target_ticks - current_ticks);
 		}
 
 		current_ticks = get_ticks_usec();

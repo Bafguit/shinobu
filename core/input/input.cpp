@@ -544,10 +544,13 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
 
+	if (p_event->is_pressed()) {
+		p_event->set_timestamp(OS::get_ticks_usec());
+	}
+
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != Key::NONE) {
 		if (k->is_pressed()) {
-			k->set_timestamp(chrono::duration_cast<chrono::nanoseconds>(chrono::steady_clock::now()).count());
 			keys_pressed.insert(k->get_keycode());
 		} else {
 			keys_pressed.erase(k->get_keycode());
@@ -590,7 +593,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
-			touch_event->set_timestamp(chrono::duration_cast<chrono::nanoseconds>(chrono::steady_clock::now()).count());
+			touch_event->set_timestamp(mb->get_timestamp());
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
 			_THREAD_SAFE_LOCK_
@@ -621,6 +624,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_velocity(get_last_mouse_velocity());
 			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			drag_event->set_timestamp(mm->get_timestamp());
 
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(drag_event);
@@ -665,7 +669,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_canceled(st->is_canceled());
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
-				button_event->set_timestamp(chrono::duration_cast<chrono::nanoseconds>(chrono::steady_clock::now()).count());
+				button_event->set_timestamp(st->get_timestamp());
 
 				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
@@ -703,6 +707,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_velocity(sd->get_velocity());
 			motion_event->set_screen_velocity(sd->get_screen_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
+			motion_event->set_timestamp(sd->get_timestamp());
 
 			_parse_input_event_impl(motion_event, true);
 		}
@@ -714,7 +719,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		JoyButton c = _combine_device(jb->get_button_index(), jb->get_device());
 
 		if (jb->is_pressed()) {
-			jb->set_timestamp(chrono::duration_cast<chrono::nanoseconds>(chrono::steady_clock::now()).count());
 			joy_buttons_pressed.insert(c);
 		} else {
 			joy_buttons_pressed.erase(c);
