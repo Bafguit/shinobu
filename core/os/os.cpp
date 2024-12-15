@@ -578,22 +578,33 @@ void OS::close_midi_inputs() {
 		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 	}
 }
+/*
+void (*OS::input_update_function)() = NULL;
 
-void OS::delay_with_event_handling(uint64_t interval) {
-	for (int i = 0; i < interval / 1000; i++) {
-		delay_usec(0);
-		DisplayServer::get_singleton()->process_events()
-	}
+void OS::set_input_update_function(void (*update_function)()) {
+	OS::input_update_function = update_function;
 }
 
-void OS::add_frame_delay(bool p_can_draw) {
+void OS::delay_with_event_handling(uint64_t interval) {
+	if(OS::input_update_function) {
+		for (int i = 0; i < interval / 1000; i++) {
+			delay_usec(0);
+			OS::input_update_function()
+		}
+	} else {
+		delay_usec(interval);
+	}
+}*/
+
+uint32_t OS::get_actual_frame_delay(bool p_can_draw) {
+	uint32_t overall_frame_delay = 0;
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
 		// the actual frame time into account.
 		// Due to the high fluctuation of the actual sleep duration, it's not recommended
 		// to use this as a FPS limiter.
-		delay_usec(frame_delay * 1000);
+		overall_frame_delay += frame_delay * 1000;
 	}
 
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
@@ -613,7 +624,46 @@ void OS::add_frame_delay(bool p_can_draw) {
 		uint64_t current_ticks = get_ticks_usec();
 
 		if (current_ticks < target_ticks) {
-			OS::delay_with_event_handling(target_ticks - current_ticks);
+			overall_frame_delay += target_ticks - current_ticks;
+		}
+
+		current_ticks = get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
+	}
+
+	return overall_frame_delay;
+}
+
+void OS::add_frame_delay(bool p_can_draw) {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		delay_usec(frame_delay * 1000);
+		//OS::delay_with_event_handling(frame_delay * 1000);
+	}
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
+		uint64_t current_ticks = get_ticks_usec();
+
+		if (current_ticks < target_ticks) {
+			delay_usec(target_ticks - current_ticks);
+			//OS::delay_with_event_handling(target_ticks - current_ticks);
 		}
 
 		current_ticks = get_ticks_usec();

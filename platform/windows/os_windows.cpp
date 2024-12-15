@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <functional>
 #include "os_windows.h"
 
 #include "display_server_windows.h"
@@ -1660,12 +1661,33 @@ void OS_Windows::run() {
 	}
 
 	main_loop->initialize();
+	//OS::set_input_update_function(&DisplayServer::get_singleton()->process_events);
+	//OS::set_input_update_function(std::bind(&DisplayServer::process_events, DisplayServer::get_singleton()));
 
-	while (true) {
+	/*while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 		if (Main::iteration()) {
 			break;
 		}
+	}*/
+
+	while(true) {
+		bool should_return = false;
+		bool exit = false;
+
+		exit = Main::iteration_pre(&should_return);
+		if(should_return && exit)
+			break;
+
+		const uint32_t frame_delay = OS::get_singleton()->get_actual_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+		for(int i = 0; i < frame_delay / 1000; i++) {
+			DisplayServer::get_singleton()->process_events();
+			OS::delay_usec(1);
+		}
+
+		exit = Main::iteration_post();
+		if(exit)
+			break;
 	}
 
 	main_loop->finalize();

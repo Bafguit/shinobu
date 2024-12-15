@@ -4009,10 +4009,7 @@ static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
 
-// Return false means iterating further, returning true means `OS::run`
-// will terminate the program. In case of failure, the OS exit code needs
-// to be set explicitly here (defaults to EXIT_SUCCESS).
-bool Main::iteration() {
+bool Main::iteration_pre(bool &should_return) {
 	iterating++;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
@@ -4209,11 +4206,15 @@ bool Main::iteration() {
 #endif
 
 	if (fixed_fps != -1) {
-		return exit;
+		//return exit;
+		should_return = true;
 	}
+	return exit;
+}
 
-	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	//OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
 
+bool Main::iteration_post() {
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
 		auto_build_solutions = false;
@@ -4237,6 +4238,23 @@ bool Main::iteration() {
 	}
 #endif
 
+	return exit;
+}
+
+// Return false means iterating further, returning true means `OS::run`
+// will terminate the program. In case of failure, the OS exit code needs
+// to be set explicitly here (defaults to EXIT_SUCCESS).
+bool Main::iteration() {
+	bool should_return = false;
+	bool exit = false;
+
+	exit = Main::iteration_pre(&should_return);
+	if(should_return)
+		return exit;
+
+	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+
+	exit = Main::iteration_post();
 	return exit;
 }
 
