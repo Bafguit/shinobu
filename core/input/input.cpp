@@ -544,9 +544,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
 
-	if (p_event->is_pressed()) {
-		p_event->set_timestamp(OS::get_singleton()->get_ticks_usec());
-	}
+	//if (p_event->is_pressed()) {
+	//	p_event->set_timestamp(OS::get_singleton()->get_ticks_usec());
+	//}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != Key::NONE) {

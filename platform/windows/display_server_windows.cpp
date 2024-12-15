@@ -32,6 +32,7 @@
 
 #include "os_windows.h"
 #include "wgl_detect_version.h"
+#include "chrono"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -4058,6 +4059,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
+							ke.timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
@@ -4970,6 +4972,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
+			ke.timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
@@ -5225,6 +5228,7 @@ void DisplayServerWindows::_process_key_events() {
 						k->set_alt_pressed(false);
 						k->set_ctrl_pressed(false);
 					}
+					k->set_timestamp(ke.timestamp);
 
 					Input::get_singleton()->parse_input_event(k);
 				} else {
@@ -5275,6 +5279,7 @@ void DisplayServerWindows::_process_key_events() {
 				k->set_physical_keycode(physical_keycode);
 				k->set_location(location);
 				k->set_key_label(key_label);
+				k->set_timestamp(ke.timestamp);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
 					char32_t unicode = key_event_buffer[i + 1].wParam;

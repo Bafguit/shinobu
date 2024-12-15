@@ -4249,7 +4249,7 @@ bool Main::iteration() {
 	bool quit_after_timeout = false;
 	bool exit = false;
 
-	exit = Main::iteration_pre(&should_return);
+	exit = Main::iteration_pre(should_return, quit_after_timeout);
 	if(should_return)
 		return exit;
 

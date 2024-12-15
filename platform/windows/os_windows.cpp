@@ -1676,7 +1676,7 @@ void OS_Windows::run() {
 		bool quit_after_timeout = false;
 		bool exit = false;
 
-		exit = Main::iteration_pre(&should_return, &quit_after_timeout);
+		exit = Main::iteration_pre(should_return, quit_after_timeout);
 		if(should_return && exit)
 			break;
 

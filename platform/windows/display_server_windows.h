@@ -405,6 +405,7 @@ class DisplayServerWindows : public DisplayServer {
 		UINT uMsg;
 		WPARAM wParam;
 		LPARAM lParam;
+		uint64_t timestamp;
 	};
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
