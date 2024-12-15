@@ -545,7 +545,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	//   require additional handling by this class.
 
 	if (p_event->is_pressed()) {
-		p_event->set_timestamp(OS::get_ticks_usec());
+		p_event->set_timestamp(OS::get_singleton()->get_ticks_usec());
 	}
 
 	Ref<InputEventKey> k = p_event;
