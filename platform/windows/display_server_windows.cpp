@@ -3013,13 +3013,13 @@ void DisplayServerWindows::process_events() {
 	MSG msg;
 	DWORD dwStart;
 	dwStart = GetTickCount();
+	if (!drop_events && joypad) {
+		joypad->process_joypads();
+	}
 
-	while(GetTickCount() - dwStart < OS::delay_ticks) {
+	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
 
 		msg = {};
-		if (!drop_events && joypad) {
-			joypad->process_joypads();
-		}
 
 		_THREAD_SAFE_LOCK_
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -3034,10 +3034,10 @@ void DisplayServerWindows::process_events() {
 		}
 #endif
 
-		if (!drop_events) {
-			_process_key_events();
-			Input::get_singleton()->flush_buffered_events();
-		}
+	}
+	if (!drop_events) {
+		_process_key_events();
+		Input::get_singleton()->flush_buffered_events();
 	}
 }
 

@@ -51,6 +51,7 @@
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
+uint64_t OS::delay_ticks = 0;
 
 OS *OS::get_singleton() {
 	return singleton;
@@ -607,9 +608,9 @@ void OS::add_frame_delay(bool p_can_draw) {
 
 		if (current_ticks < target_ticks) {
 			delay_ticks = target_ticks - current_ticks
-			//delay_usec();
+			//
 		}
-
+		delay_usec(1000);
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
