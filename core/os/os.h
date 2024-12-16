@@ -46,7 +46,6 @@
 class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
-	static uint64_t delay_ticks;
 	String _execpath;
 	List<String> _cmdline;
 	List<String> _user_args;
@@ -131,6 +130,7 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+	static uint64_t delay_ticks;
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
