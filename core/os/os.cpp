@@ -606,7 +606,8 @@ void OS::add_frame_delay(bool p_can_draw) {
 		uint64_t current_ticks = get_ticks_usec();
 
 		if (current_ticks < target_ticks) {
-			delay_usec(target_ticks - current_ticks);
+			delay_ticks = target_ticks - current_ticks
+			//delay_usec();
 		}
 
 		current_ticks = get_ticks_usec();

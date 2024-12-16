@@ -46,6 +46,7 @@
 class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
+	static uint64_t delay_ticks;
 	String _execpath;
 	List<String> _cmdline;
 	List<String> _user_args;

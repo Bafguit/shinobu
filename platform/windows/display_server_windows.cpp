@@ -3010,28 +3010,34 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
-	if (!drop_events && joypad) {
-		joypad->process_joypads();
-	}
-/*
-	_THREAD_SAFE_LOCK_
-	MSG msg = {};
+	MSG msg;
+	DWORD dwStart;
+	dwStart = GetTickCount();
 
-	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-	_THREAD_SAFE_UNLOCK_
-*/
+	while(GetTickCount() - dwStart < OS::delay_ticks) {
+
+		msg = {};
+		if (!drop_events && joypad) {
+			joypad->process_joypads();
+		}
+
+		_THREAD_SAFE_LOCK_
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		_THREAD_SAFE_UNLOCK_
+
 #ifdef SDL_ENABLED
-	if (!drop_events && joypad_sdl) {
-		joypad_sdl->process_events();
-	}
+		if (!drop_events && joypad_sdl) {
+			joypad_sdl->process_events();
+		}
 #endif
 
-	if (!drop_events) {
-		_process_key_events();
-		Input::get_singleton()->flush_buffered_events();
+		if (!drop_events) {
+			_process_key_events();
+			Input::get_singleton()->flush_buffered_events();
+		}
 	}
 }
 
