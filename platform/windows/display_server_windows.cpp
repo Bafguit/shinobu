@@ -3017,24 +3017,24 @@ void DisplayServerWindows::process_events() {
 		joypad->process_joypads();
 	}
 
+	_THREAD_SAFE_LOCK_
 	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
 
 		msg = {};
 
-		_THREAD_SAFE_LOCK_
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		_THREAD_SAFE_UNLOCK_
+
+	}
+	_THREAD_SAFE_UNLOCK_
 
 #ifdef SDL_ENABLED
 		if (!drop_events && joypad_sdl) {
 			joypad_sdl->process_events();
 		}
 #endif
-
-	}
 	if (!drop_events) {
 		_process_key_events();
 		Input::get_singleton()->flush_buffered_events();
