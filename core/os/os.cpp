@@ -590,7 +590,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 		delay_ticks = (frame_delay * 1000);
 	}
 	else {
-		delay_ticks = get_low_processor_usage_mode_sleep_usec();
+		delay_ticks = MAX(get_low_processor_usage_mode_sleep_usec(), 1000);
 	}
 	/*
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
