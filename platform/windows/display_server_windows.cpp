@@ -3008,21 +3008,25 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 }
 
 void DisplayServerWindows::process_events() {
-	if (!drop_events) {
-		ERR_FAIL_COND(!Thread::is_main_thread());
-	}
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
+	MSG msg;
+	DWORD dwStart;
+	dwStart = GetTickCount();
 	if (!drop_events && joypad) {
 		joypad->process_joypads();
 	}
 
 	_THREAD_SAFE_LOCK_
+	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
 
-	MSG msg = {};
+		msg = {};
 
-	while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
 	}
 	_THREAD_SAFE_UNLOCK_
 
@@ -3038,7 +3042,7 @@ void DisplayServerWindows::process_events() {
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
-	//ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	drop_events = true;
 	process_events();
