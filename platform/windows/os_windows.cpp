@@ -1685,8 +1685,10 @@ void OS_Windows::run() {
 	while (true) {
 		OS::iter_running = true;
 		std::thread t([]() {
+			MSG msg;
+
 			while(OS::iter_running) {
-				MSG msg = {};
+				msg = {};
 
 				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&msg);
