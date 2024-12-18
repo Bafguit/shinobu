@@ -1683,11 +1683,9 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
-		bool result;
 		OS::iter_running = true;
-
 		std::thread t([]() {
-			result = Main::iteration();
+			OS::iter_result = Main::iteration();
 			OS::iter_running = false;
 		});
 
@@ -1697,7 +1695,7 @@ void OS_Windows::run() {
 			t.join();
 		}
 
-		if (result) {
+		if (OS::iter_result) {
 			break;
 		}
 	}
