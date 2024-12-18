@@ -1683,32 +1683,22 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
+		bool result;
 		OS::iter_running = true;
+
 		std::thread t([]() {
-			MSG msg;
-
-			while(OS::iter_running) {
-				msg = {};
-
-				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
-				}
-			}
+			result = Main::iteration();
+			OS::iter_running = false;
 		});
 
-		bool result = Main::iteration();
-
-		OS::iter_running = false;
+		DisplayServer::get_singleton()->process_events();
 
 		if (t.joinable()) {
-			t.join
+			t.join();
 		}
 
 		if (result) {
 			break;
-		} else {
-			DisplayServer::get_singleton()->process_events();
 		}
 	}
 

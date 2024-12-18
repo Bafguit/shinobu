@@ -3018,7 +3018,7 @@ void DisplayServerWindows::process_events() {
 	}
 
 	_THREAD_SAFE_LOCK_
-	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
+	while(GetTickCount() - dwStart < OS::delay_ticks / 1000 and OS::itr_running) {
 
 		msg = {};
 
