@@ -779,13 +779,14 @@ void OS_MacOS::run() {
 	while (!quit) {
 		@autoreleasepool {
 			@try {
-				if (DisplayServer::get_singleton()) {
-					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-				}
-				joypad_macos->start_processing();
 
 				if (Main::iteration()) {
 					quit = true;
+				} else {
+					if (DisplayServer::get_singleton()) {
+						DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
+					}
+					joypad_macos->start_processing();
 				}
 			} @catch (NSException *exception) {
 				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));

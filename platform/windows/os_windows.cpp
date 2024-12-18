@@ -708,10 +708,11 @@ void Wait(DWORD dwMillisecond) {
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
 	if (p_usec < 1000) {
-		Sleep(1);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		//Wait(1);
 	} else {
-		Sleep(p_usec / 1000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(p_usec / 1000));
+		//Sleep(p_usec / 1000);
 		//Wait(p_usec / 1000);
 	}
 	//std::chrono::microseconds duration(p_usec);
@@ -1683,10 +1684,27 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
-		if (Main::iteration()) {
+
+		DisplayServer::get_singleton()->process_events();
+
+		OS::iter_running = true;
+		std::thread t([]() {
+			while(OS::iter_running) {
+				DisplayServer::get_singleton()->force_process_and_drop_events();
+			}
+		});
+
+		bool result = Main::iteration();
+
+		OS::iter_running = false;
+
+		if (t.joinable()) {
+			t.join();
+		}
+
+		if (result) {
 			break;
 		}
-		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 	}
 
 	main_loop->finalize();
