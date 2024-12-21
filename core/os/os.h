@@ -131,6 +131,7 @@ public:
 
 	static OS *get_singleton();
 	static uint64_t delay_ticks;
+	static bool itr_running;
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }

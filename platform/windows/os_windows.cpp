@@ -1683,10 +1683,18 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
-		if (Main::iteration()) {
+		DisplayServer::get_singleton()->process_events(); // get rid of pending events
+		HANDLE tHandle = DisplayServer::get_singleton()->process_itr();
+
+		bool end = Main::iteration();
+		OS::itr_running = false;
+
+		WaitForSingleObject(tHandle, INFINITE);
+		CloseHandle(tHandle);
+
+		if (end) {
 			break;
 		}
-		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 	}
 
 	main_loop->finalize();

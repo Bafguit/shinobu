@@ -3008,7 +3008,9 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 }
 
 void DisplayServerWindows::process_events() {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	if (!drop_events) {
+		ERR_FAIL_COND(!Thread::is_main_thread());
+	}
 
 	MSG msg;
 	DWORD dwStart;
@@ -3042,11 +3044,38 @@ void DisplayServerWindows::process_events() {
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	//ERR_FAIL_COND(!Thread::is_main_thread());
 
 	drop_events = true;
 	process_events();
 	drop_events = false;
+}
+
+UINT WINAPI ThreadFunc(void *arg)
+{
+	//HWNDm hWnd;
+ 
+    //hWnd = CreateWindow(L"DeCompWnd", L"0", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 400, 150, hWndMain, (HMENU)NULL, g_hInstance, NULL);
+    //ShowWindow(hWnd, SW_SHOW);
+ 
+	MSG msg;
+
+    while (OS::itr_running)
+    {
+		msg = {};
+
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+    }
+
+    return 0;
+}
+
+HANDLE DisplayServerWindows::process_itr() {
+	OS::itr_running = true;
+	return (HANDLE)_beginthreadex(nullptr, 0, ThreadFunc, nullptr, 0, nullptr);
 }
 
 void DisplayServerWindows::release_rendering_thread() {

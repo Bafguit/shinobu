@@ -52,6 +52,7 @@
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
 uint64_t OS::delay_ticks = 0;
+bool OS::itr_running = false;
 
 OS *OS::get_singleton() {
 	return singleton;
@@ -582,24 +583,22 @@ void OS::close_midi_inputs() {
 
 void OS::add_frame_delay(bool p_can_draw) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
-	if (frame_delay && frame_delay > 0) {
+	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
 		// the actual frame time into account.
 		// Due to the high fluctuation of the actual sleep duration, it's not recommended
 		// to use this as a FPS limiter.
-		delay_ticks = (frame_delay * 1000);
+		delay_usec(frame_delay * 1000);
+		//OS::delay_with_event_handling(frame_delay * 1000);
 	}
-	else {
-		delay_ticks = 1000;
-	}
-	/*
+
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
 	// previous frame time into account for a smoother result.
-	uint64_t dynamic_delay = 0;*/
+	uint64_t dynamic_delay = 0;
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
-		delay_ticks = MAX(get_low_processor_usage_mode_sleep_usec(), delay_ticks);
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
 	}
-	/*const int max_fps = Engine::get_singleton()->get_max_fps();
+	const int max_fps = Engine::get_singleton()->get_max_fps();
 	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
 		// Override the low processor usage mode sleep delay if the target FPS is lower.
 		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
@@ -609,14 +608,14 @@ void OS::add_frame_delay(bool p_can_draw) {
 		target_ticks += dynamic_delay;
 		uint64_t current_ticks = get_ticks_usec();
 
-		//if (current_ticks < target_ticks) {
-		//	delay_ticks = target_ticks - current_ticks
-			//
-		//}
-		delay_ticks = 1000;
+		if (current_ticks < target_ticks) {
+			delay_usec(target_ticks - current_ticks);
+			//OS::delay_with_event_handling(target_ticks - current_ticks);
+		}
+
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
-	}*/
+	}
 }
 
 Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
