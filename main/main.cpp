@@ -4009,6 +4009,12 @@ static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
 
+void (*Main::input_update_function)() = NULL;
+
+void Main::set_input_update_function(void (*update_function)()) {
+	Main::input_update_function = update_function;
+}
+
 // Return false means iterating further, returning true means `OS::run`
 // will terminate the program. In case of failure, the OS exit code needs
 // to be set explicitly here (defaults to EXIT_SUCCESS).
@@ -4019,6 +4025,7 @@ bool Main::iteration() {
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
 	main_timer_sync.set_fixed_fps(fixed_fps);
+	Main::input_update_function();
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
@@ -4053,33 +4060,40 @@ bool Main::iteration() {
 	// process all our active interfaces
 #ifndef _3D_DISABLED
 	XRServer::get_singleton()->_process();
+	Main::input_update_function();
 #endif // _3D_DISABLED
 
 	NavigationServer2D::get_singleton()->sync();
 	NavigationServer3D::get_singleton()->sync();
+	Main::input_update_function();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
 		}
+		Main::input_update_function();
 
 		Engine::get_singleton()->_in_physics = true;
 		Engine::get_singleton()->_physics_frames++;
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
+		Main::input_update_function();
 
 #ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
+		Main::input_update_function();
 #endif // _3D_DISABLED
 
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+		Main::input_update_function();
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
+		Main::input_update_function();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 #ifndef _3D_DISABLED
@@ -4090,44 +4104,58 @@ bool Main::iteration() {
 			exit = true;
 			break;
 		}
+		Main::input_update_function();
 
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+		Main::input_update_function();
 
 		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+		Main::input_update_function();
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
 		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
+		Main::input_update_function();
 
 		message_queue->flush();
+		Main::input_update_function();
 
 #ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+		Main::input_update_function();
 #endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+		Main::input_update_function();
 
 		message_queue->flush();
+		Main::input_update_function();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
+		Main::input_update_function();
 
 		Engine::get_singleton()->_in_physics = false;
 	}
+	Main::input_update_function();
 
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		Input::get_singleton()->flush_buffered_events();
 	}
+	Main::input_update_function();
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
 	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
 		exit = true;
 	}
+	Main::input_update_function();
 	message_queue->flush();
+	Main::input_update_function();
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+	Main::input_update_function();
 
 	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
@@ -4142,20 +4170,24 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
+	Main::input_update_function();
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+	Main::input_update_function();
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
 
 	AudioServer::get_singleton()->update();
+	Main::input_update_function();
 
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);
 	}
+	Main::input_update_function();
 
 	frames++;
 	Engine::get_singleton()->_process_frames++;
@@ -4191,6 +4223,7 @@ bool Main::iteration() {
 	if (movie_writer) {
 		movie_writer->add_frame();
 	}
+	Main::input_update_function();
 
 #ifdef TOOLS_ENABLED
 	bool quit_after_timeout = false;

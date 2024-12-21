@@ -1677,6 +1677,10 @@ String OS_Windows::get_processor_name() const {
 	}
 }
 
+void OS_Windows::process_events() {
+	DisplayServer::get_singleton()->process_events();
+}
+
 void OS_Windows::run() {
 	if (!main_loop) {
 		return;
@@ -1685,14 +1689,11 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
-		std::thread t([]() {
-			DisplayServer::get_singleton()->process_events();
-		});
+		Main::set_input_update_function(&process_events);
+		DisplayServer::get_singleton()->process_events();
 
 		OS::iter_result = Main::iteration();
 		OS::iter_running = false;
-
-		t.join();
 
 		if (OS::iter_result) {
 			break;

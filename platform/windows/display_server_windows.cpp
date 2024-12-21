@@ -3017,7 +3017,7 @@ void DisplayServerWindows::process_events() {
 	}
 
 	//_THREAD_SAFE_LOCK_
-	while(OS::iter_running) {
+	while(!drop_events || OS::iter_running) {
 
 		msg = {};
 
