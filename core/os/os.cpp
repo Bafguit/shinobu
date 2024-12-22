@@ -589,12 +589,22 @@ void OS::add_frame_delay(bool p_can_draw) {
 		// the actual frame time into account.
 		// Due to the high fluctuation of the actual sleep duration, it's not recommended
 		// to use this as a FPS limiter.
-		delay_usec(frame_delay * 1000);
-		//OS::delay_with_event_handling(frame_delay * 1000);
+			delay_ticks = (frame_delay * 1000);
+	}
+	else {
+		delay_ticks = 1000;
+	}
+	/*
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;*/
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		delay_ticks = MAX(get_low_processor_usage_mode_sleep_usec(), delay_ticks);
 	}
 
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
 	// previous frame time into account for a smoother result.
+	/*
 	uint64_t dynamic_delay = 0;
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
 		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
@@ -616,7 +626,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
-	}
+	}*/
 }
 
 Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {

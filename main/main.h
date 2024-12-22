@@ -58,6 +58,7 @@ class Main {
 	static uint32_t frame;
 	static bool force_redraw_requested;
 	static int iterating;
+	static void (*input_update_function)();
 
 public:
 	static bool is_cmdline_tool();
@@ -82,6 +83,8 @@ public:
 
 	static bool iteration();
 	static void force_redraw();
+
+	static void set_input_update_function(void (*update_function)());
 
 	static bool is_iterating();
 

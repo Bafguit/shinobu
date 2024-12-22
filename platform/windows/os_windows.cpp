@@ -710,11 +710,11 @@ void OS_Windows::delay_usec(uint32_t p_usec) const {
 	if (p_usec < 1000) {
 		//Sleep(1);
 		//Wait(1);
-		std:this_thread::sleep_for(std::chrono::milliseconds(1));
+		//std:this_thread::sleep_for(std::chrono::milliseconds(1));
 	} else {
 		//Sleep(p_usec / 1000);
 		//Wait(p_usec / 1000);
-		std:this_thread::sleep_for(std::chrono::milliseconds(p_usec / 1000));
+		//std:this_thread::sleep_for(std::chrono::milliseconds(p_usec / 1000));
 	}
 	//std::chrono::microseconds duration(p_usec);
 	//std::this_thread::sleep_for(duration);
@@ -1677,8 +1677,13 @@ String OS_Windows::get_processor_name() const {
 	}
 }
 
-void OS_Windows::process_events() {
-	DisplayServer::get_singleton()->process_events();
+void process_events() {
+	MSG msg = {};
+
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 }
 
 void OS_Windows::run() {

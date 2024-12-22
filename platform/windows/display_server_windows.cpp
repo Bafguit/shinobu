@@ -3008,16 +3008,17 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 }
 
 void DisplayServerWindows::process_events() {
-	//ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	MSG msg;
-
+	DWORD dwStart;
+	dwStart = GetTickCount();
 	if (!drop_events && joypad) {
 		joypad->process_joypads();
 	}
 
-	//_THREAD_SAFE_LOCK_
-	while(!drop_events || OS::iter_running) {
+	_THREAD_SAFE_LOCK_
+	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
 
 		msg = {};
 
@@ -3027,7 +3028,6 @@ void DisplayServerWindows::process_events() {
 		}
 
 	}
-	//_THREAD_SAFE_UNLOCK_
 
 #ifdef SDL_ENABLED
 		if (!drop_events && joypad_sdl) {
@@ -3041,7 +3041,7 @@ void DisplayServerWindows::process_events() {
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
-	//ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	drop_events = true;
 	process_events();
@@ -3777,15 +3777,122 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
+LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+	WindowID window_id = INVALID_WINDOW_ID;
+	bool window_created = false;
+
+	// Check whether window exists
+	// FIXME this is O(n), where n is the set of currently open windows and subwindows
+	// we should have a secondary map from HWND to WindowID or even WindowData* alias, if we want to eliminate all the map lookups below
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hWnd == hWnd) {
+			window_id = E.key;
+			window_created = true;
+			break;
+		}
+	}
+
+	// WARNING: we get called with events before the window is registered in our collection
+	// specifically, even the call to CreateWindowEx already calls here while still on the stack,
+	// so there is no way to store the window handle in our collection before we get here
+	if (!window_created) {
+		// don't let code below operate on incompletely initialized window objects or missing window_id
+		return _handle_early_window_message(hWnd, uMsg, wParam, lParam);
+	}
+
+	// Process window messages.
+	switch (uMsg) {
+		case WM_INPUT: {
+			if (!use_raw_input) {
+				break;
+			}
+
+			UINT dwSize;
+
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
+			LPBYTE lpb = new BYTE[dwSize];
+			if (lpb == nullptr) {
+				return 0;
+			}
+
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
+				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+			}
+
+			RAWINPUT *raw = (RAWINPUT *)lpb;
+
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+				if (raw->data.keyboard.VKey == VK_SHIFT) {
+					// If multiple Shifts are held down at the same time,
+					// Windows natively only sends a KEYUP for the last one to be released.
+					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
+						if (!mods.has_flag(WinKeyModifierMask::SHIFT)) {
+							// A Shift is released, but another Shift is still held
+							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+							KeyEvent ke;
+							ke.shift = false;
+							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+							ke.meta = mods.has_flag(WinKeyModifierMask::META);
+							ke.uMsg = WM_KEYUP;
+							ke.window_id = window_id;
+							ke.timestamp = OS::get_singleton()->get_ticks_usec();
+
+							ke.wParam = VK_SHIFT;
+							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+							// Bit 30 -> key was previously down, bit 31 -> key is being released.
+							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+							key_event_buffer[key_event_pos++] = ke;
+						}
+					}
+				}
+			}
+		} break;
+		case WM_CHAR: {
+			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+			KeyEvent ke;
+			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+			ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+			ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+			ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+			ke.meta = mods.has_flag(WinKeyModifierMask::META);
+			ke.uMsg = uMsg;
+			ke.window_id = window_id;
+			ke.timestamp = OS::get_singleton()->get_ticks_usec();
+
+			if (ke.uMsg == WM_SYSKEYDOWN) {
+				ke.uMsg = WM_KEYDOWN;
+			}
+			if (ke.uMsg == WM_SYSKEYUP) {
+				ke.uMsg = WM_KEYUP;
+			}
+
+			ke.wParam = wParam;
+			ke.lParam = lParam;
+			key_event_buffer[key_event_pos++] = ke;
+
+		} break;
+		default: {
+			if (user_proc) {
+				return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
+			}
+		}
+	}
+
+	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
 // The window procedure for our window class "Engine", used to handle processing of window-related system messages/events.
 // See: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-procedures
 LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	if (drop_events) {
-		if (user_proc) {
-			return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
-		} else {
-			return DefWindowProcW(hWnd, uMsg, wParam, lParam);
-		}
+		return DisplayServerWindows::ItrProc(hWnd, uMsg, wParam, lParam);
 	}
 
 	WindowID window_id = INVALID_WINDOW_ID;
