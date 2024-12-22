@@ -1706,7 +1706,7 @@ void OS_Windows::run() {
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-		running = true
+		running = true;
 		HANDLE tHandle = (HANDLE)_beginthreadex(nullptr, 0, ThreadFunc, nullptr, 0, nullptr);
 
 		bool end = Main::iteration();
