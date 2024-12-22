@@ -53,6 +53,7 @@
 #include <io.h>
 #include <shellapi.h>
 #include <stdio.h>
+#include <process.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <dwrite.h>

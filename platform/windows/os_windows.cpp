@@ -1675,6 +1675,23 @@ String OS_Windows::get_processor_name() const {
 	}
 }
 
+UINT WINAPI ThreadFunc(void *arg)
+{
+	MSG msg;
+
+    while (OS::itr_running)
+    {
+		msg = {};
+
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+    }
+
+    return 0;
+}
+
 void OS_Windows::run() {
 	if (!main_loop) {
 		return;
@@ -1684,7 +1701,8 @@ void OS_Windows::run() {
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-		HANDLE tHandle = DisplayServer::get_singleton()->process_itr();
+		OS::itr_running = true;
+		HANDLE tHandle = (HANDLE)_beginthreadex(nullptr, 0, ThreadFunc, nullptr, 0, nullptr);
 
 		bool end = Main::iteration();
 		OS::itr_running = false;

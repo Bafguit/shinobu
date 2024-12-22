@@ -35,7 +35,7 @@
 #include "joypad_windows.h"
 #include "key_mapping_windows.h"
 #include "tts_windows.h"
-#include <process.h>
+//#include <process.h>
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -605,7 +605,7 @@ public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
-	HANDLE process_itr();
+	//HANDLE process_itr();
 
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);

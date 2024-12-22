@@ -3044,13 +3044,14 @@ void DisplayServerWindows::process_events() {
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
-	//ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	drop_events = true;
 	process_events();
 	drop_events = false;
 }
 
+/*
 UINT WINAPI ThreadFunc(void *arg)
 {
 	//HWNDm hWnd;
@@ -3077,7 +3078,7 @@ HANDLE DisplayServerWindows::process_itr() {
 	OS::itr_running = true;
 	return (HANDLE)_beginthreadex(nullptr, 0, ThreadFunc, nullptr, 0, nullptr);
 }
-
+*/
 void DisplayServerWindows::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
 	if (gl_manager_angle) {
