@@ -605,6 +605,8 @@ public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
+	LRESULT ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	//HANDLE process_itr();
 
 	void popup_open(WindowID p_window);

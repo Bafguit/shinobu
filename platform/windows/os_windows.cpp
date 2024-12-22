@@ -1675,11 +1675,14 @@ String OS_Windows::get_processor_name() const {
 	}
 }
 
+bool running = false;
+
 UINT WINAPI ThreadFunc(void *arg)
 {
+	OS::itr_running = true;
 	MSG msg;
 
-    while (OS::itr_running)
+    while (running)
     {
 		msg = {};
 
@@ -1688,6 +1691,8 @@ UINT WINAPI ThreadFunc(void *arg)
 			DispatchMessage(&msg);
 		}
     }
+
+	OS::itr_running = false;
 
     return 0;
 }
@@ -1701,13 +1706,13 @@ void OS_Windows::run() {
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-		OS::itr_running = true;
+		running = true
 		HANDLE tHandle = (HANDLE)_beginthreadex(nullptr, 0, ThreadFunc, nullptr, 0, nullptr);
 
 		bool end = Main::iteration();
-		OS::itr_running = false;
+		running = false;
 
-		WaitForSingleObject(tHandle, INFINITE);
+		//WaitForSingleObject(tHandle, INFINITE);
 		CloseHandle(tHandle);
 
 		if (end) {
