@@ -52,6 +52,7 @@
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
 uint64_t OS::delay_ticks = 0;
+uint64_t OS::last_input_ticks = 0;
 bool OS::iter_running = false;
 bool OS::iter_result = false;
 

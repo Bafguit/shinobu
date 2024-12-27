@@ -135,6 +135,7 @@ public:
 	static uint64_t delay_ticks;
 	static bool iter_running;
 	static bool iter_result;
+	static uint64_t last_input_ticks;
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }

@@ -3019,7 +3019,6 @@ void DisplayServerWindows::process_events() {
 
 	_THREAD_SAFE_LOCK_
 	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
-
 		msg = {};
 
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -3028,6 +3027,7 @@ void DisplayServerWindows::process_events() {
 		}
 
 	}
+	_THREAD_SAFE_UNLOCK_
 
 #ifdef SDL_ENABLED
 		if (!drop_events && joypad_sdl) {

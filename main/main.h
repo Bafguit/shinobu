@@ -84,6 +84,8 @@ public:
 	static bool iteration();
 	static void force_redraw();
 
+	static bool run_input_update_function();
+
 	static void set_input_update_function(void (*update_function)());
 
 	static bool is_iterating();
