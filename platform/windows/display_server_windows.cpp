@@ -3022,7 +3022,7 @@ void DisplayServerWindows::process_events() {
 		msg = {};
 
 		const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		if(ticks >= OS::last_input_ticks + OS::input_update_delay, 0) {
+		if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 0)) {
 			OS::last_input_ticks = ticks;
 			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 				TranslateMessage(&msg);
