@@ -766,6 +766,24 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
+void process_events() {
+	if (DisplayServer::get_singleton()) {
+		while (true) {
+			NSEvent *event = [NSApp
+					nextEventMatchingMask:NSEventMaskAny
+								untilDate:[NSDate distantPast]
+								inMode:NSDefaultRunLoopMode
+								dequeue:YES];
+
+			if (event == nil) {
+				break;
+			}
+
+			[NSApp sendEvent:event];
+		}
+	}
+}
+
 void OS_MacOS::run() {
 	if (!main_loop) {
 		return;
@@ -774,6 +792,8 @@ void OS_MacOS::run() {
 	@autoreleasepool {
 		main_loop->initialize();
 	}
+
+	Main::set_input_update_function(&process_events);
 
 	bool quit = false;
 	while (!quit) {

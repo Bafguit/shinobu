@@ -1692,9 +1692,10 @@ void OS_Windows::run() {
 	}
 
 	main_loop->initialize();
+	
+	Main::set_input_update_function(&process_events);
 
 	while (true) {
-		Main::set_input_update_function(&process_events);
 		DisplayServer::get_singleton()->process_events();
 
 		OS::iter_result = Main::iteration();

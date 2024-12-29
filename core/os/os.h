@@ -133,6 +133,7 @@ public:
 
 	static OS *get_singleton();
 	static uint64_t delay_ticks;
+	static uint64_t input_update_delay;
 	static bool iter_running;
 	static bool iter_result;
 	static uint64_t last_input_ticks;

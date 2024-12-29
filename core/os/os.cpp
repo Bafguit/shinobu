@@ -52,6 +52,7 @@
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
 uint64_t OS::delay_ticks = 0;
+uint64_t OS::input_update_delay = 500;
 uint64_t OS::last_input_ticks = 0;
 bool OS::iter_running = false;
 bool OS::iter_result = false;
@@ -595,13 +596,12 @@ void OS::add_frame_delay(bool p_can_draw) {
 	else {
 		delay_ticks = 1000;
 	}
+	target_ticks += delay_ticks;
 	/*
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
 	// previous frame time into account for a smoother result.
 	uint64_t dynamic_delay = 0;*/
-	if (is_in_low_processor_usage_mode() || !p_can_draw) {
-		delay_ticks = MAX(get_low_processor_usage_mode_sleep_usec(), delay_ticks);
-	}
+	input_update_delay = MIN(get_low_processor_usage_mode_sleep_usec(), 500);
 
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
 	// previous frame time into account for a smoother result.
@@ -617,7 +617,6 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 
 	if (dynamic_delay > 0) {
-		target_ticks += dynamic_delay;
 		uint64_t current_ticks = get_ticks_usec();
 
 		if (current_ticks < target_ticks) {

@@ -3021,9 +3021,13 @@ void DisplayServerWindows::process_events() {
 	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
 		msg = {};
 
-		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		if(ticks >= OS::last_input_ticks + OS::input_update_delay, 0) {
+			OS::last_input_ticks = ticks;
+			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 		}
 
 	}
