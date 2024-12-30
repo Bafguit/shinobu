@@ -708,11 +708,11 @@ void Wait(DWORD dwMillisecond) {
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
 	if (p_usec < 1000) {
-		//Sleep(1);
+		Sleep(1);
 		//Wait(1);
 		//std:this_thread::sleep_for(std::chrono::milliseconds(1));
 	} else {
-		//Sleep(p_usec / 1000);
+		Sleep(p_usec / 1000);
 		//Wait(p_usec / 1000);
 		//std:this_thread::sleep_for(std::chrono::milliseconds(p_usec / 1000));
 	}

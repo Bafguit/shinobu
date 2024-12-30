@@ -3011,25 +3011,36 @@ void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	MSG msg;
-	DWORD dwStart;
-	dwStart = GetTickCount();
 	if (!drop_events && joypad) {
 		joypad->process_joypads();
 	}
 
 	_THREAD_SAFE_LOCK_
-	while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
+	if (Input::get_singleton()->is_agile_input_event_flushing()) {
+		DWORD dwStart;
+		dwStart = GetTickCount();
+		
+		while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
+			msg = {};
+
+			const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+			if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 0)) {
+				OS::last_input_ticks = ticks;
+				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+			}
+
+		}
+	} else {
 		msg = {};
 
-		const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 0)) {
-			OS::last_input_ticks = ticks;
-			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+		OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
-
 	}
 	_THREAD_SAFE_UNLOCK_
 

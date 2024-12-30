@@ -4016,10 +4016,12 @@ void Main::set_input_update_function(void (*update_function)()) {
 }
 
 void Main::run_input_update_function() {
-	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-	if(ticks >= OS::last_input_ticks + OS::input_update_delay, 0) {
-		OS::last_input_ticks = ticks;
-		Main::input_update_function();
+	if(Input::get_singleton()->is_agile_input_event_flushing()) {
+		const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		if(ticks >= OS::last_input_ticks + OS::input_update_delay, 0) {
+			OS::last_input_ticks = ticks;
+			Main::input_update_function();
+		}
 	}
 }
 
@@ -4081,9 +4083,9 @@ bool Main::iteration() {
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		Main::run_input_update_function();
-		if (Input::get_singleton()->is_agile_input_event_flushing()) {
-			Input::get_singleton()->flush_buffered_events();
-		}
+		//if (Input::get_singleton()->is_agile_input_event_flushing()) {
+		//	Input::get_singleton()->flush_buffered_events();
+		//}
 
 		Engine::get_singleton()->_in_physics = true;
 		Engine::get_singleton()->_physics_frames++;
@@ -4142,9 +4144,9 @@ bool Main::iteration() {
 		Main::run_input_update_function();
 	}
 
-	if (Input::get_singleton()->is_agile_input_event_flushing()) {
-		Input::get_singleton()->flush_buffered_events();
-	}
+	//if (Input::get_singleton()->is_agile_input_event_flushing()) {
+	//	Input::get_singleton()->flush_buffered_events();
+	//}
 	Main::run_input_update_function();
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
