@@ -4016,7 +4016,7 @@ void Main::set_input_update_function(void (*update_function)()) {
 }
 
 void Main::run_input_update_function() {
-	if(Input::get_singleton()->is_agile_input_event_flushing()) {
+	if(Input::get_singleton()->is_using_accumulated_input()) {
 		const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 		if(ticks >= OS::last_input_ticks + OS::input_update_delay, 0) {
 			OS::last_input_ticks = ticks;

@@ -585,7 +585,7 @@ void OS::close_midi_inputs() {
 }
 
 void OS::add_frame_delay(bool p_can_draw) {
-	if(Input::get_singleton()->is_agile_input_event_flushing()) {
+	if(Input::get_singleton()->is_using_accumulated_input()) {
 		const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 		if (frame_delay) {
 				delay_ticks = (frame_delay * 1000);
