@@ -1714,18 +1714,32 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-void ThreadFunc(DWORD mainThreadId, HWND wnd) {
-	DWORD currentThreadId = GetCurrentThreadId();
-	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+void ThreadFunc() {
+	WNDCLASS wc = {0};
+    wc.lpfnWndProc = (WNDPROC)DisplayServer::get_singleton()->WndProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = "IOwind";
+
+    if (!RegisterClass(&wc)) {
+        return;
+    }
+
+    // 가짜 GUI 창 생성
+    HWND handle = CreateWindow(
+        "IOwind", "wind", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
+        NULL, NULL, GetModuleHandle(NULL), NULL
+    );
+
+	while(!OS::iter_result) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
-			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			while(PeekMessage(&msg, handle, 0, 0, PM_REMOVE)) {
 				TranslateMessage(&msg);
 				SendMessage(wnd, &msg);
 			}
 		}
-		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
 }
 
@@ -1738,23 +1752,23 @@ void OS_Windows::run() {
 	
 	//Main::set_input_update_function(&process_events);
 
+	std::thread t1(&ThreadFunc);
+
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
 		OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
-
 		OS::iter_result = Main::iteration();
 
 		OS::iter_running = false;
-
-		t1.join();
 
 		if (OS::iter_result) {
 			break;
 		}
 	}
+
+	t1.join();
 
 
 	main_loop->finalize();
