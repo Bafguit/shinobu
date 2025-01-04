@@ -1714,28 +1714,14 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-void ThreadFunc(DWORD mainThreadId, HWND wnd) {
+void ThreadFunc(DWORD mainThreadId) {
 	DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
 			while(PeekMessage(&msg, nullptr, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-				UINT dwSize;
-
-				GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
-				LPBYTE lpb = new BYTE[dwSize];
-				if (lpb == nullptr) {
-					return;
-				}
-
-				RAWINPUT *raw = (RAWINPUT *)lpb;
-
-				//const BitField<DisplayServerWindows::WinKeyModifierMask> &mods = DisplayServerWindows::get_singleton()->_get_mods();
-				if (raw->header.dwType == RIM_TYPEKEYBOARD) {
-
-					static_cast<DisplayServerWindows *>(DisplayServer::get_singleton())->add_key_event(msg, raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31);
-				}
+				PostThreadMessage(mainThreadId, WM_INPUT, msg.time, msg.lParam)
 			}
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
@@ -1756,7 +1742,7 @@ void OS_Windows::run() {
 
 		OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
+		std::thread t1(&ThreadFunc, GetCurrentThreadId());
 
 		OS::iter_result = Main::iteration();
 
