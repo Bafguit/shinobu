@@ -1726,7 +1726,7 @@ void ThreadFunc(DWORD mainThreadId, HWND wnd) {
 				GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
 				LPBYTE lpb = new BYTE[dwSize];
 				if (lpb == nullptr) {
-					return 0;
+					return;
 				}
 
 				RAWINPUT *raw = (RAWINPUT *)lpb;
@@ -1734,12 +1734,12 @@ void ThreadFunc(DWORD mainThreadId, HWND wnd) {
 				const BitField<WinKeyModifierMask> &mods = DisplayServer::get_singleton()->_get_mods();
 				if (raw->header.dwType == RIM_TYPEKEYBOARD) {
 
-					KeyEvent ke;
-					ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
-					ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-					ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-					ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-					ke.meta = mods.has_flag(WinKeyModifierMask::META);
+					DisplayServerWindows::KeyEvent ke;
+					ke.shift = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::SHIFT);
+					ke.altgr = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::ALT_GR);
+					ke.alt = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::ALT);
+					ke.control = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::CTRL);
+					ke.meta = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::META);
 					ke.uMsg = msg.message;
 					ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
