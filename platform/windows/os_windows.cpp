@@ -1731,30 +1731,10 @@ void ThreadFunc(DWORD mainThreadId, HWND wnd) {
 
 				RAWINPUT *raw = (RAWINPUT *)lpb;
 
-				const BitField<DisplayServerWindows::WinKeyModifierMask> &mods = DisplayServerWindows::get_singleton()->_get_mods();
+				//const BitField<DisplayServerWindows::WinKeyModifierMask> &mods = DisplayServerWindows::get_singleton()->_get_mods();
 				if (raw->header.dwType == RIM_TYPEKEYBOARD) {
 
-					DisplayServerWindows::KeyEvent ke;
-					ke.shift = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::SHIFT);
-					ke.altgr = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::ALT_GR);
-					ke.alt = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::ALT);
-					ke.control = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::CTRL);
-					ke.meta = mods.has_flag(DisplayServerWindows::WinKeyModifierMask::META);
-					ke.uMsg = msg.message;
-					ke.timestamp = OS::get_singleton()->get_ticks_usec();
-
-					if (ke.uMsg == WM_SYSKEYDOWN) {
-						ke.uMsg = WM_KEYDOWN;
-					}
-					if (ke.uMsg == WM_SYSKEYUP) {
-						ke.uMsg = WM_KEYUP;
-					}
-
-					ke.wParam = msg.wParam;
-					// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
-					// Bit 30 -> key was previously down, bit 31 -> key is being released.
-					ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-					DisplayServerWindows::get_singleton()->key_event_buffer[DisplayServerWindows::get_singleton()->key_event_pos++] = ke;
+					DisplayServer::get_singleton()->add_key_event(msg, raw);
 				}
 			}
 		}

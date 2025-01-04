@@ -254,6 +254,33 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
+void DisplayServerWindows::add_key_event(MSG msg, RAWINPUT raw) {
+	const BitField<WinKeyModifierMask> &mods = _get_mods();
+	ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+	KeyEvent ke;
+	ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+	ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+	ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+	ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+	ke.meta = mods.has_flag(WinKeyModifierMask::META);
+	ke.uMsg = msg.message;
+	ke.timestamp = OS::get_singleton()->get_ticks_usec();
+
+	if (ke.uMsg == WM_SYSKEYDOWN) {
+		ke.uMsg = WM_KEYDOWN;
+	}
+	if (ke.uMsg == WM_SYSKEYUP) {
+		ke.uMsg = WM_KEYUP;
+	}
+	
+	ke.wParam = msg.wParam;
+	// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+	// Bit 30 -> key was previously down, bit 31 -> key is being released.
+	ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+	key_event_buffer[key_event_pos++] = ke;
+}
+
 // Silence warning due to a COM API weirdness.
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
