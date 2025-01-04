@@ -606,7 +606,7 @@ public:
 
 	LRESULT ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	void add_key_event(MSG msg, RAWINPUT raw);
+	void add_key_event(MSG msg, LPARAM lParam);
 
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);

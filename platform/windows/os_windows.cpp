@@ -1734,7 +1734,7 @@ void ThreadFunc(DWORD mainThreadId, HWND wnd) {
 				//const BitField<DisplayServerWindows::WinKeyModifierMask> &mods = DisplayServerWindows::get_singleton()->_get_mods();
 				if (raw->header.dwType == RIM_TYPEKEYBOARD) {
 
-					DisplayServer::get_singleton()->add_key_event(msg, raw);
+					DisplayServerWindows::get_singleton()->add_key_event(msg, raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31);
 				}
 			}
 		}

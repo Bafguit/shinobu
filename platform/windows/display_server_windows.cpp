@@ -254,7 +254,7 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
-void DisplayServerWindows::add_key_event(MSG msg, RAWINPUT raw) {
+void DisplayServerWindows::add_key_event(MSG msg, LPARAM lParam) {
 	const BitField<WinKeyModifierMask> &mods = _get_mods();
 	ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
@@ -277,7 +277,7 @@ void DisplayServerWindows::add_key_event(MSG msg, RAWINPUT raw) {
 	ke.wParam = msg.wParam;
 	// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
 	// Bit 30 -> key was previously down, bit 31 -> key is being released.
-	ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+	ke.lParam = lParam;
 	key_event_buffer[key_event_pos++] = ke;
 }
 
