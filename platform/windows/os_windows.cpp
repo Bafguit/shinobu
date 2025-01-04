@@ -1731,7 +1731,7 @@ void ThreadFunc(DWORD mainThreadId, HWND wnd) {
 
 				RAWINPUT *raw = (RAWINPUT *)lpb;
 
-				const BitField<WinKeyModifierMask> &mods = DisplayServer::get_singleton()->_get_mods();
+				const BitField<DisplayServerWindows::WinKeyModifierMask> &mods = DisplayServerWindows::get_singleton()->_get_mods();
 				if (raw->header.dwType == RIM_TYPEKEYBOARD) {
 
 					DisplayServerWindows::KeyEvent ke;
@@ -1754,7 +1754,7 @@ void ThreadFunc(DWORD mainThreadId, HWND wnd) {
 					// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
 					// Bit 30 -> key was previously down, bit 31 -> key is being released.
 					ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-					DisplayServer::get_singleton()->key_event_buffer[DisplayServer::get_singleton()->key_event_pos++] = ke;
+					DisplayServerWindows::get_singleton()->key_event_buffer[DisplayServerWindows::get_singleton()->key_event_pos++] = ke;
 				}
 			}
 		}
