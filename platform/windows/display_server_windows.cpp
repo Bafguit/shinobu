@@ -3068,7 +3068,11 @@ void DisplayServerWindows::process_events() {
 		OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			if (msg.message == WM_INPUT) {
+				SendMessage(GetCurrentThreadId(), WM_INPUT, msg.time, msg.lParam);
+			} else {
+				DispatchMessage(&msg);
+			}
 		}
 	//}
 	_THREAD_SAFE_UNLOCK_

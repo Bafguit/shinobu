@@ -1742,13 +1742,13 @@ void OS_Windows::run() {
 
 		OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId());
+		//std::thread t1(&ThreadFunc, GetCurrentThreadId());
 
 		OS::iter_result = Main::iteration();
 
 		OS::iter_running = false;
 
-		t1.join();
+		//t1.join();
 
 		if (OS::iter_result) {
 			break;
