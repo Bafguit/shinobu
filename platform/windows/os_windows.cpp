@@ -1686,6 +1686,48 @@ void process_events() {
 		}
 }
 
+/*
+
+void register_raw_input() {
+	RAWINPUTDEVICE Rid[4];
+
+	rid[0].usUsagePage = 0x01; // 마우스
+    rid[0].usUsage = 0x02;
+    rid[0].dwFlags = 0;//RIDEV_NOLEGACY | RIDEV_INPUTSINK;
+    rid[0].hwndTarget = 0;
+
+    rid[1].usUsagePage = 0x01; // 키보드
+    rid[1].usUsage = 0x06;
+    rid[1].dwFlags = 0;// RIDEV_NOLEGACY | RIDEV_INPUTSINK;
+    rid[1].hwndTarget = 0;
+        
+	Rid[2].usUsagePage = 0x01;          // HID_USAGE_PAGE_GENERIC
+	Rid[2].usUsage = 0x05;              // HID_USAGE_GENERIC_GAMEPAD
+	Rid[2].dwFlags = 0;                 // adds game pad
+	Rid[2].hwndTarget = 0;
+
+	Rid[3].usUsagePage = 0x01;          // HID_USAGE_PAGE_GENERIC
+	Rid[3].usUsage = 0x04;              // HID_USAGE_GENERIC_JOYSTICK
+	Rid[3].dwFlags = 0;                 // adds joystick
+	Rid[3].hwndTarget = 0;
+
+    RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
+}*/
+
+UINT WINAPI ThreadFunc(void *arg) {
+	while(!OS::iter_result) {
+		while(OS::iter_running) {
+			MSG msg = {};
+
+			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
+	}
+	return 0;
+}
+
 void OS_Windows::run() {
 	if (!main_loop) {
 		return;
@@ -1693,16 +1735,45 @@ void OS_Windows::run() {
 
 	main_loop->initialize();
 	
-	Main::set_input_update_function(&process_events);
+	//Main::set_input_update_function(&process_events);
 
-	while (true) {
-		DisplayServer::get_singleton()->process_events();
+	HANDLE hThread;
+	UINT dwThreadID;
+	hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadFunc, NULL, 0, &dwThreadID);
 
-		OS::iter_result = Main::iteration();
-		OS::iter_running = false;
+	if (AttachThreadInput(dwThreadID, GetCurrentThreadId(), TRUE)) {
+		while (true) {
+			DisplayServer::get_singleton()->process_events();
 
-		if (OS::iter_result) {
-			break;
+			OS::iter_running = true;
+			OS::iter_result = Main::iteration();
+			OS::iter_running = false;
+
+			if (OS::iter_result) {
+				break;
+			}
+		}
+
+		WaitForSingleObject(hThread, INFINITE);
+
+		if (hThread != NULL) {
+			CloseHandle(hThread); 
+			hThread = NULL;
+		}
+	} else {
+		ExitThread(dwThreadID);
+
+		if (hThread != NULL) {
+			CloseHandle(hThread); 
+			hThread = NULL;
+		}
+
+		while (true) {
+			DisplayServer::get_singleton()->process_events();
+
+			if (Main::iteration()) {
+				break;
+			}
 		}
 	}
 

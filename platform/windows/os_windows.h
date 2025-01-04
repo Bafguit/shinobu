@@ -50,6 +50,8 @@
 #include "servers/rendering/rendering_device.h"
 #endif
 
+#include <thread>
+
 #include <io.h>
 #include <shellapi.h>
 #include <stdio.h>

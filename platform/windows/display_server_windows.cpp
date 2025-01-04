@@ -3015,15 +3015,15 @@ void DisplayServerWindows::process_events() {
 		joypad->process_joypads();
 	}
 
-	_THREAD_SAFE_LOCK_
+	/*_THREAD_SAFE_LOCK_
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		DWORD dwStart;
-		dwStart = GetTickCount();
+		dwStart = OS::get_singleton()->get_ticks_usec();
+		uint64_t ticks = dwStart;
 		
-		while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
+		while(ticks - dwStart < OS::delay_ticks / 1000) {
 			msg = {};
 
-			const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 			if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 0)) {
 				OS::last_input_ticks = ticks;
 				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -3031,6 +3031,8 @@ void DisplayServerWindows::process_events() {
 					DispatchMessage(&msg);
 				}
 			}
+
+			ticks = OS::get_singleton()->get_ticks_usec();
 
 		}
 	} else {
@@ -3042,7 +3044,7 @@ void DisplayServerWindows::process_events() {
 			DispatchMessage(&msg);
 		}
 	}
-	_THREAD_SAFE_UNLOCK_
+	_THREAD_SAFE_UNLOCK_*/
 
 #ifdef SDL_ENABLED
 		if (!drop_events && joypad_sdl) {
@@ -3906,9 +3908,9 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 // The window procedure for our window class "Engine", used to handle processing of window-related system messages/events.
 // See: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-procedures
 LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (drop_events) {
-		return DisplayServerWindows::ItrProc(hWnd, uMsg, wParam, lParam);
-	}
+	//if (drop_events) {
+	//	return DisplayServerWindows::ItrProc(hWnd, uMsg, wParam, lParam);
+	//}
 
 	WindowID window_id = INVALID_WINDOW_ID;
 	bool window_created = false;

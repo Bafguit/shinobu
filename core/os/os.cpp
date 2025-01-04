@@ -55,7 +55,7 @@ uint64_t OS::delay_ticks = 0;
 uint64_t OS::input_update_delay = 500;
 uint64_t OS::last_input_ticks = 0;
 bool OS::iter_running = false;
-bool OS::iter_result = false;
+bool OS::iter_result = true;
 
 OS *OS::get_singleton() {
 	return singleton;
@@ -585,7 +585,7 @@ void OS::close_midi_inputs() {
 }
 
 void OS::add_frame_delay(bool p_can_draw) {
-	if(Input::get_singleton()->is_using_accumulated_input()) {
+	/*if(Input::get_singleton()->is_using_accumulated_input()) {
 		const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 		if (frame_delay) {
 				delay_ticks = (frame_delay * 1000);
@@ -596,7 +596,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 		target_ticks += delay_ticks;
 		input_update_delay = get_low_processor_usage_mode_sleep_usec();
 	}
-	else {
+	else {*/
 		uint64_t dynamic_delay = 0;
 
 		const int max_fps = Engine::get_singleton()->get_max_fps();
@@ -614,7 +614,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 			current_ticks = get_ticks_usec();
 			target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 		}
-	}
+	//}
 }
 
 Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
