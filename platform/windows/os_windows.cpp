@@ -1745,16 +1745,35 @@ void register_raw_input() {
 }*/
 
 void ThreadFunc(DWORD mainThreadId, HWND active_window) {
+	WNDCLASS wc = {0};
+    wc.lpfnWndProc = DefWindowProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = "IOwind";
+
+    if (!RegisterClass(&wc)) {
+        Godot::print("Failed to register window class");
+        return;
+    }
+
+    // 가짜 GUI 창 생성
+    HWND handle = CreateWindow(
+        "IOwind", "wind", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
+        NULL, NULL, GetModuleHandle(NULL), NULL
+    );
 	DWORD currentThreadId = GetCurrentThreadId();
-	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+	
+	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+	MSG msg = {};
+	while(!OS::iter_result) {
 		while(OS::iter_running) {
-			MSG msg = {};
-			while(PeekMessage(&msg, active_window, WM_INPUT, WM_INPUT, PM_NOREMOVE)) {
-				OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
+			while(PeekMessage(&msg, handle, WM_INPUT, WM_INPUT, PM_REMOVE)) {
+				DisplayServerWindows::add_key_event(handle, msg);
 			}
 		}
-		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
+	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
+	//}
 }
 
 void OS_Windows::run() {
@@ -1765,24 +1784,23 @@ void OS_Windows::run() {
 	main_loop->initialize();
 	
 	//Main::set_input_update_function(&process_events);
+	std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
 		OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
-
 		OS::iter_result = Main::iteration();
 
 		OS::iter_running = false;
-
-		t1.join();
 
 		if (OS::iter_result) {
 			break;
 		}
 	}
+
+	t1.join();
 
 
 	main_loop->finalize();
