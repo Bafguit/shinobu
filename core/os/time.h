@@ -77,7 +77,6 @@ public:
 	double get_unix_time_from_system() const;
 	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
-	uint64_t get_last_physics_ticks() const;
 
 	Time();
 	virtual ~Time();

@@ -3074,6 +3074,8 @@ void DisplayServerWindows::process_events() {
 				DispatchMessage(&msg);
 			//}
 		}
+
+		OS::input_timestamps.clear();
 	//}
 	_THREAD_SAFE_UNLOCK_
 
@@ -4190,6 +4192,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			uint64_t times = -1;
+			if (OS::input_timestamps.size() > 0) {
+				times = OS::input_timestamps.pop_front();
+			}
+
 			UINT dwSize;
 
 			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
@@ -4222,7 +4229,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
-							ke.timestamp = wParam;
+							ke.timestamp = times;
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.

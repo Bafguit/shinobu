@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <chrono>
+#include <list>
 
 class OS {
 	static OS *singleton;
@@ -136,7 +137,7 @@ public:
 	static uint64_t input_update_delay;
 	static bool iter_running;
 	static bool iter_result;
-	static uint64_t last_physics_ticks;
+	static std::list<uint64_t> input_timestamps;
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }

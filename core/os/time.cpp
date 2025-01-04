@@ -394,10 +394,6 @@ uint64_t Time::get_ticks_usec() const {
 	return OS::get_singleton()->get_ticks_usec();
 }
 
-uint64_t Time::get_last_physics_ticks() const {
-	return OS::last_physics_ticks;
-}
-
 void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_unix_time", "unix_time_val"), &Time::get_datetime_dict_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_date_dict_from_unix_time", "unix_time_val"), &Time::get_date_dict_from_unix_time);
@@ -421,7 +417,6 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_system"), &Time::get_unix_time_from_system);
 	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &Time::get_ticks_msec);
 	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &Time::get_ticks_usec);
-	ClassDB::bind_method(D_METHOD("get_last_physics_ticks"), &Time::get_last_physics_ticks);
 
 	BIND_ENUM_CONSTANT(MONTH_JANUARY);
 	BIND_ENUM_CONSTANT(MONTH_FEBRUARY);

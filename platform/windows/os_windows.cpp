@@ -1744,14 +1744,13 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-void ThreadFunc(DWORD mainThreadId) {
+void ThreadFunc(DWORD mainThreadId, HWND active_window) {
 	DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		while(OS::iter_running) {
 			MSG msg = {};
-
-			while(PeekMessage(&msg, nullptr, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-				PostThreadMessage(mainThreadId, WM_INPUT, OS::get_singleton()->get_ticks_usec(), msg.lParam);
+			while(PeekMessage(&msg, active_window, WM_INPUT, WM_INPUT, PM_NOREMOVE)) {
+				OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 			}
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
@@ -1772,7 +1771,7 @@ void OS_Windows::run() {
 
 		OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId());
+		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
 
 		OS::iter_result = Main::iteration();
 
