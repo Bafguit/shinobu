@@ -256,7 +256,7 @@ void DisplayServerWindows::tts_stop() {
 
 void DisplayServerWindows::add_key_event(MSG msg, LPARAM lParam) {
 	const BitField<WinKeyModifierMask> &mods = _get_mods();
-	ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+	//ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 	KeyEvent ke;
 	ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
@@ -3070,7 +3070,7 @@ void DisplayServerWindows::process_events() {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-	}
+	//}
 	_THREAD_SAFE_UNLOCK_
 
 #ifdef SDL_ENABLED
