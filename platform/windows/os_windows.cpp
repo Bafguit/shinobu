@@ -1714,32 +1714,51 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-void ThreadFunc() {
-	WNDCLASS wc = {0};
-    wc.lpfnWndProc = (WNDPROC)DisplayServer::get_singleton()->WndProc;
-    wc.hInstance = GetModuleHandle(NULL);
-    wc.lpszClassName = "IOwind";
-
-    if (!RegisterClass(&wc)) {
-        return;
-    }
-
-    // 가짜 GUI 창 생성
-    HWND handle = CreateWindow(
-        "IOwind", "wind", WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-        NULL, NULL, GetModuleHandle(NULL), NULL
-    );
-
-	while(!OS::iter_result) {
+void ThreadFunc(DWORD mainThreadId, HWND wnd) {
+	DWORD currentThreadId = GetCurrentThreadId();
+	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
-			while(PeekMessage(&msg, handle, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&msg);
-				SendMessage(wnd, &msg);
+			while(PeekMessage(&msg, nullptr, WM_INPUT, WM_INPUT, PM_REMOVE)) {
+				UINT dwSize;
+
+				GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
+				LPBYTE lpb = new BYTE[dwSize];
+				if (lpb == nullptr) {
+					return 0;
+				}
+
+				RAWINPUT *raw = (RAWINPUT *)lpb;
+
+				const BitField<WinKeyModifierMask> &mods = DisplayServer::get_singleton()->_get_mods();
+				if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+
+					KeyEvent ke;
+					ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+					ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+					ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+					ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+					ke.meta = mods.has_flag(WinKeyModifierMask::META);
+					ke.uMsg = msg.message;
+					ke.timestamp = OS::get_singleton()->get_ticks_usec();
+
+					if (ke.uMsg == WM_SYSKEYDOWN) {
+						ke.uMsg = WM_KEYDOWN;
+					}
+					if (ke.uMsg == WM_SYSKEYUP) {
+						ke.uMsg = WM_KEYUP;
+					}
+
+					ke.wParam = msg.wParam;
+					// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+					// Bit 30 -> key was previously down, bit 31 -> key is being released.
+					ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+					DisplayServer::get_singleton()->key_event_buffer[DisplayServer::get_singleton()->key_event_pos++] = ke;
+				}
 			}
 		}
+		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
 }
 
@@ -1752,23 +1771,23 @@ void OS_Windows::run() {
 	
 	//Main::set_input_update_function(&process_events);
 
-	std::thread t1(&ThreadFunc);
-
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
 		OS::iter_running = true;
 
+		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
+
 		OS::iter_result = Main::iteration();
 
 		OS::iter_running = false;
+
+		t1.join();
 
 		if (OS::iter_result) {
 			break;
 		}
 	}
-
-	t1.join();
 
 
 	main_loop->finalize();

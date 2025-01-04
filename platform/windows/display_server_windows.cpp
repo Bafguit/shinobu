@@ -3015,8 +3015,8 @@ void DisplayServerWindows::process_events() {
 		joypad->process_joypads();
 	}
 
-	/*_THREAD_SAFE_LOCK_
-	if (Input::get_singleton()->is_agile_input_event_flushing()) {
+	_THREAD_SAFE_LOCK_
+	/*if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		DWORD dwStart;
 		dwStart = OS::get_singleton()->get_ticks_usec();
 		uint64_t ticks = dwStart;
@@ -3035,16 +3035,16 @@ void DisplayServerWindows::process_events() {
 			ticks = OS::get_singleton()->get_ticks_usec();
 
 		}
-	} else {
+	} else {*/
 		msg = {};
 
-		//OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
+		OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 	}
-	_THREAD_SAFE_UNLOCK_*/
+	_THREAD_SAFE_UNLOCK_
 
 #ifdef SDL_ENABLED
 		if (!drop_events && joypad_sdl) {
@@ -3855,7 +3855,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
 							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
-							ke.uMsg = WM_KEYUP;
+							ke.uMsg = uMsg;
 							ke.window_id = window_id;
 							ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
