@@ -1715,17 +1715,17 @@ void register_raw_input() {
 }*/
 
 void ThreadFunc(DWORD mainThreadId) {
-	DWORD currentThreadId = GetCurrentThreadId();
+	/*DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
 			while(PeekMessage(&msg, nullptr, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-				PostThreadMessage(mainThreadId, WM_INPUT, msg.time, msg.lParam)
+				PostThreadMessage(mainThreadId, WM_INPUT, msg.time, msg.lParam);
 			}
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
-	}
+	}*/
 }
 
 void OS_Windows::run() {
