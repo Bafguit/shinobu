@@ -247,7 +247,7 @@ public:
 	virtual uint64_t get_ticks_usec() const = 0;
 	virtual uint64_t get_steady_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
-	virtual void update_physical_ticks();
+	virtual void update_physical_ticks() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
 

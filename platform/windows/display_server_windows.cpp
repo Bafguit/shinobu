@@ -3065,7 +3065,7 @@ void DisplayServerWindows::process_events() {
 	} else {*/
 		msg = {};
 
-		OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
+		//OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			/*if (msg.message == WM_INPUT) {
 				SendMessage(nullptr, WM_INPUT, msg.time, msg.lParam);
@@ -3936,6 +3936,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
+#define PHYSICS_TICK	WM_USER+101
 // The window procedure for our window class "Engine", used to handle processing of window-related system messages/events.
 // See: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-procedures
 LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {

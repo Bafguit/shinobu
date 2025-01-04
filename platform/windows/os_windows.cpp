@@ -773,6 +773,8 @@ uint64_t OS_Windows::get_steady_ticks_usec() const {
 
 	return time;
 }
+#define PHYSICS_TICK	WM_USER+101
+
 
 void OS_Windows::update_physical_ticks() const {
 	SendMessage(nullptr, PHYSICS_TICK);
