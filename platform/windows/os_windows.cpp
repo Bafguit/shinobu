@@ -745,6 +745,35 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	return time;
 }
 
+uint64_t OS_Windows::get_steady_ticks_usec() const {
+	uint64_t ticks;
+
+	// This is the number of clock ticks since start
+	QueryPerformanceCounter((LARGE_INTEGER *)&ticks);
+	// Subtract the ticks at game start to get
+	// the ticks since the game started
+
+	// Divide by frequency to get the time in seconds
+	// original calculation shown below is subject to overflow
+	// with high ticks_per_second and a number of days since the last reboot.
+	// time = ticks * 1000000L / ticks_per_second;
+
+	// we can prevent this by either using 128 bit math
+	// or separating into a calculation for seconds, and the fraction
+	uint64_t seconds = ticks / ticks_per_second;
+
+	// compiler will optimize these two into one divide
+	uint64_t leftover = ticks % ticks_per_second;
+
+	// remainder
+	uint64_t time = (leftover * 1000000L) / ticks_per_second;
+
+	// seconds
+	time += seconds * 1000000L;
+
+	return time;
+}
+
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	for (int i = 0; i < p_text.size(); i++) {
 		char32_t c = p_text[i];

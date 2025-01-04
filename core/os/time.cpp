@@ -395,7 +395,7 @@ uint64_t Time::get_ticks_usec() const {
 }
 
 uint64_t Time::get_steady_time() const {
-	return std::chrono::steady_clock::now().time_since_epoch().count();
+	return OS::get_singleton()->get_steady_ticks_usec();
 }
 
 void Time::_bind_methods() {

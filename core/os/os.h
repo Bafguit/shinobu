@@ -245,6 +245,7 @@ public:
 	virtual void add_frame_delay(bool p_can_draw);
 
 	virtual uint64_t get_ticks_usec() const = 0;
+	virtual uint64_t get_steady_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
