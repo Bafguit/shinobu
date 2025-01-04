@@ -3888,7 +3888,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = uMsg;
 							ke.window_id = window_id;
-							ke.timestamp = GetMessageTime();
+							ke.timestamp = wParam;
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
@@ -3912,7 +3912,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = GetMessageTime();
+			ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
@@ -3968,9 +3968,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
-		case PHYSICS_TICK: {
+		/*case PHYSICS_TICK: {
 			OS::last_physics_ticks = GetMessageTime();
-		} break;
+		} break;*/
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
 		} break;
@@ -4222,7 +4222,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
-							ke.timestamp = GetMessageTime();
+							ke.timestamp = wParam;
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
@@ -5135,7 +5135,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = GetMessageTime();
+			ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;

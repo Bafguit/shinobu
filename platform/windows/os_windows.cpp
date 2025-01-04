@@ -691,7 +691,7 @@ double OS_Windows::get_unix_time() const {
 }
 
 void Wait(uint32_t delay_u) {
-	MSG msg;
+	//MSG msg;
 
 	uint32_t dwStart = OS::get_singleton()->get_ticks_usec();
 	uint32_t temp = dwStart;
@@ -777,7 +777,7 @@ uint64_t OS_Windows::get_steady_ticks_usec() const {
 
 
 void OS_Windows::update_physical_ticks() const {
-	SendMessage(nullptr, PHYSICS_TICK);
+	//PostMessage(GetActiveWindow(), PHYSICS_TICK, 0, 0);
 }
 
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
@@ -1745,17 +1745,17 @@ void register_raw_input() {
 }*/
 
 void ThreadFunc(DWORD mainThreadId) {
-	/*DWORD currentThreadId = GetCurrentThreadId();
+	DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
 			while(PeekMessage(&msg, nullptr, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-				PostThreadMessage(mainThreadId, WM_INPUT, msg.time, msg.lParam);
+				PostThreadMessage(mainThreadId, WM_INPUT, OS::get_singleton()->get_ticks_usec(), msg.lParam);
 			}
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
-	}*/
+	}
 }
 
 void OS_Windows::run() {
@@ -1772,13 +1772,13 @@ void OS_Windows::run() {
 
 		OS::iter_running = true;
 
-		//std::thread t1(&ThreadFunc, GetCurrentThreadId());
+		std::thread t1(&ThreadFunc, GetCurrentThreadId());
 
 		OS::iter_result = Main::iteration();
 
 		OS::iter_running = false;
 
-		//t1.join();
+		t1.join();
 
 		if (OS::iter_result) {
 			break;

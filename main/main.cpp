@@ -4106,7 +4106,7 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->flush_queries();
 		//Main::run_input_update_function();
 
-		OS::get_singleton()->update_physical_ticks();
+		//OS::get_singleton()->update_physical_ticks();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 #ifndef _3D_DISABLED
