@@ -4194,7 +4194,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			uint64_t times = -1;
 			if (OS::input_timestamps.size() > 0) {
-				times = OS::input_timestamps.pop_front();
+				times = OS::input_timestamps.front();
+				OS::input_timestamps.pop_front();
 			}
 
 			UINT dwSize;
