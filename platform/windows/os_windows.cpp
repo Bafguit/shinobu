@@ -1714,8 +1714,9 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-UINT WINAPI ThreadFunc(void *arg) {
-	while(!OS::iter_result) {
+void ThreadFunc(DWORD mainThreadId) {
+	DWORD currentThreadId = GetCurrentThreadId();
+	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
@@ -1724,6 +1725,7 @@ UINT WINAPI ThreadFunc(void *arg) {
 				DispatchMessage(&msg);
 			}
 		}
+		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
 	return 0;
 }
@@ -1737,45 +1739,24 @@ void OS_Windows::run() {
 	
 	//Main::set_input_update_function(&process_events);
 
-	HANDLE hThread;
-	UINT dwThreadID;
-	hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadFunc, NULL, 0, &dwThreadID);
+	while (true) {
+		DisplayServer::get_singleton()->process_events();
 
-	if (AttachThreadInput(dwThreadID, GetCurrentThreadId(), TRUE)) {
-		while (true) {
-			DisplayServer::get_singleton()->process_events();
+		OS::iter_running = true;
 
-			OS::iter_running = true;
-			OS::iter_result = Main::iteration();
-			OS::iter_running = false;
+		std::thread t1(&ThreadFunc, GetCurrentThreadId());
 
-			if (OS::iter_result) {
-				break;
-			}
-		}
+		OS::iter_result = Main::iteration();
 
-		WaitForSingleObject(hThread, INFINITE);
+		OS::iter_running = false;
 
-		if (hThread != NULL) {
-			CloseHandle(hThread); 
-			hThread = NULL;
-		}
-	} else {
-		ExitThread(dwThreadID);
+		thread1.join();
 
-		if (hThread != NULL) {
-			CloseHandle(hThread); 
-			hThread = NULL;
-		}
-
-		while (true) {
-			DisplayServer::get_singleton()->process_events();
-
-			if (Main::iteration()) {
-				break;
-			}
+		if (OS::iter_result) {
+			break;
 		}
 	}
+
 
 	main_loop->finalize();
 }
