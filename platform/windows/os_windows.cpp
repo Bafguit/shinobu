@@ -690,32 +690,27 @@ double OS_Windows::get_unix_time() const {
 	return (double)(ticks_time - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
 }
 
-void Wait(DWORD dwMillisecond) {
+void Wait(uint32_t delay_u) {
 	MSG msg;
-	DWORD dwStart;
-	dwStart = GetTickCount();
 
-	while(GetTickCount() - dwStart < dwMillisecond) {
+	uint32_t dwStart = OS::get_singleton()->get_ticks_usec();
+	uint32_t temp = dwStart;
 
-		msg = {};
-
-		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+	while(temp - dwStart < delay_u) {
+		temp = OS::get_singleton()->get_ticks_usec();
 	}
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	if (p_usec < 1000) {
-		Sleep(1);
-		//Wait(1);
+	/*if (p_usec < 1000) {
+		//Sleep(1);
+		Wait(1);
 		//std:this_thread::sleep_for(std::chrono::milliseconds(1));
-	} else {
-		Sleep(p_usec / 1000);
-		//Wait(p_usec / 1000);
+	} else {*/
+		//Sleep(p_usec / 1000);
+		Wait(p_usec);
 		//std:this_thread::sleep_for(std::chrono::milliseconds(p_usec / 1000));
-	}
+	//}
 	//std::chrono::microseconds duration(p_usec);
 	//std::this_thread::sleep_for(duration);
 }
