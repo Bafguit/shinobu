@@ -136,7 +136,7 @@ public:
 	static uint64_t input_update_delay;
 	static bool iter_running;
 	static bool iter_result;
-	static uint64_t last_input_ticks;
+	static uint64_t last_physics_ticks;
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
@@ -247,6 +247,7 @@ public:
 	virtual uint64_t get_ticks_usec() const = 0;
 	virtual uint64_t get_steady_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
+	virtual void update_physical_ticks();
 
 	virtual bool is_userfs_persistent() const { return true; }
 

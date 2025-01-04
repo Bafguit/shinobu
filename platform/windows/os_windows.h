@@ -186,6 +186,7 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 	virtual uint64_t get_steady_ticks_usec() const override;
+	virtual void update_physical_ticks() const override;
 
 	virtual Dictionary get_memory_info() const override;
 

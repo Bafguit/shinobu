@@ -774,6 +774,10 @@ uint64_t OS_Windows::get_steady_ticks_usec() const {
 	return time;
 }
 
+void OS_Windows::update_physical_ticks() const {
+	SendMessage(nullptr, PHYSICS_TICK);
+}
+
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	for (int i = 0; i < p_text.size(); i++) {
 		char32_t c = p_text[i];

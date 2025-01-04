@@ -3967,6 +3967,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case PHYSICS_TICK: {
+			OS::last_physics_ticks = GetMessageTime();
+		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
 		} break;

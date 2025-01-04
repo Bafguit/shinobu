@@ -4016,13 +4016,13 @@ void Main::set_input_update_function(void (*update_function)()) {
 }
 
 void Main::run_input_update_function() {
-	if(Input::get_singleton()->is_using_accumulated_input()) {
+	/*if(Input::get_singleton()->is_using_accumulated_input()) {
 		const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 		if(ticks >= OS::last_input_ticks + OS::input_update_delay, 0) {
 			OS::last_input_ticks = ticks;
 			Main::input_update_function();
 		}
-	}
+	}*/
 }
 
 // Return false means iterating further, returning true means `OS::run`
@@ -4105,6 +4105,8 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 		//Main::run_input_update_function();
+
+		OS::get_singleton()->update_physical_ticks();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 #ifndef _3D_DISABLED
