@@ -5063,7 +5063,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = msg_time;
+			if (msg_time == -1) {
+				ke.timestamp = OS::get_singleton()->get_ticks_usec();
+			} else {
+				ke.timestamp = msg_time;
+			}
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;

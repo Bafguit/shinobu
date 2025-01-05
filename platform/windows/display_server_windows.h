@@ -601,7 +601,7 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 public:
-	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, uint64_t msg_time);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
 	LRESULT ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
