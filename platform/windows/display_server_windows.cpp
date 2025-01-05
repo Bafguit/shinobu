@@ -3020,7 +3020,7 @@ void DisplayServerWindows::process_events() {
 		joypad->process_joypads();
 	}
 
-	//_THREAD_SAFE_LOCK_
+	_THREAD_SAFE_LOCK_
 	/*if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		DWORD dwStart;
 		dwStart = OS::get_singleton()->get_ticks_usec();
@@ -3040,22 +3040,22 @@ void DisplayServerWindows::process_events() {
 			ticks = OS::get_singleton()->get_ticks_usec();
 
 		}
-	} else {
+	} else {*/
 		msg = {};
 
 		//OS::last_input_ticks = OS::get_singleton()->get_ticks_usec();
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			/*if (msg.message == WM_INPUT) {
 				SendMessage(nullptr, WM_INPUT, msg.time, msg.lParam);
-			} else {
+			} else {*/
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			//}
-		}*/
+		}
 
 		//OS::input_timestamps.clear();
 	//}
-	//_THREAD_SAFE_UNLOCK_
+	_THREAD_SAFE_UNLOCK_
 
 #ifdef SDL_ENABLED
 		if (!drop_events && joypad_sdl) {

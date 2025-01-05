@@ -1761,19 +1761,18 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
         CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
         NULL, NULL, GetModuleHandle(NULL), NULL
     );
-
-	//DWORD currentThreadId = GetCurrentThreadId();
+	DWORD currentThreadId = GetCurrentThreadId();
 	
 	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		MSG msg = {};
 		while(!OS::iter_result) {
 			//OS::input_timestamps.clear();
 			//while(OS::iter_running) {
-				while(PeekMessage(&msg, handle, 0, 0, PM_REMOVE)) {
+				while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
 					DisplayServerWindows::add_key_event(active_window, msg);
 					//OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 				}
-			//}
+		//	}
 		}
 	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	//}
