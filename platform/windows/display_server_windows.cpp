@@ -256,7 +256,7 @@ void DisplayServerWindows::tts_stop() {
 
 void DisplayServerWindows::add_key_event(HWND handle, MSG msg) {
 	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
-	ds_win->ItrProc(handle, msg.message, msg.wParam, msg.lParam);
+	ds_win->WndProc(handle, msg.message, msg.wParam, msg.lParam, OS::get_singleton()->get_ticks_usec());
 }
 
 // Silence warning due to a COM API weirdness.
@@ -3053,7 +3053,7 @@ void DisplayServerWindows::process_events() {
 			//}
 		}
 
-		OS::input_timestamps.clear();
+		//OS::input_timestamps.clear();
 	//}
 	_THREAD_SAFE_UNLOCK_
 
@@ -3859,7 +3859,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 #define PHYSICS_TICK	WM_USER+101
 // The window procedure for our window class "Engine", used to handle processing of window-related system messages/events.
 // See: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-procedures
-LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, uint64_t msg_time = -1) {
 	//if (drop_events) {
 	//	return DisplayServerWindows::ItrProc(hWnd, uMsg, wParam, lParam);
 	//}
@@ -5046,12 +5046,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_CHAR: {
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
-			uint64_t times = -1;
+			/*uint64_t times = -1;
 			if (OS::input_timestamps.size() > 0) {
 				times = OS::input_timestamps.pop_front();
 			} else {
 				times = OS::get_singleton()->get_ticks_usec();
-			}
+			}*/
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 
@@ -5063,7 +5063,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = times;
+			ke.timestamp = msg_time;
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
