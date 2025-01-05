@@ -4142,7 +4142,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
-							ke.timestamp = -1000000;
+							if (msg_time == -1) {
+								ke.timestamp = OS::get_singleton()->get_ticks_usec();
+							} else {
+								ke.timestamp = msg_time;
+							}
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
