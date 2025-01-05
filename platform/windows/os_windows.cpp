@@ -1766,8 +1766,9 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
 	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 	MSG msg = {};
 	while(!OS::iter_result) {
-		while(GetMessage(&msg, handle, WM_INPUT, WM_INPUT, PM_REMOVE)) {
+		while(GetMessage(&msg, handle, WM_CHAR, WM_CHAR)) {
 			DisplayServerWindows::add_key_event(handle, msg);
+			ERR_PRINT_ONCE("Got Message");
 		}
 	}
 	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
