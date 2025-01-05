@@ -257,9 +257,9 @@ void DisplayServerWindows::tts_stop() {
 void DisplayServerWindows::add_key_event(MSG msg) {
 	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
 	if (ds_win) {
-		return ds_win->WndProc(msg.hwnd, msg.message, msg.wParam, msg.lParam, OS::get_singleton()->get_ticks_usec());
+		ds_win->WndProc(msg.hwnd, msg.message, msg.wParam, msg.lParam, OS::get_singleton()->get_ticks_usec());
 	} else {
-		return DefWindowProcW(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+		DefWindowProcW(msg.hwnd, msg.message, msg.wParam, msg.lParam);
 	}
 }
 

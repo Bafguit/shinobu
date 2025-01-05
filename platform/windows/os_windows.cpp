@@ -1689,17 +1689,17 @@ void process_events() {
 
 
 void register_raw_input() {
-	buffer = new BYTE[163840];
+	//LPBYTE buffer = new BYTE[163840];
 	
 	WNDCLASS wc = {0};
     wc.lpfnWndProc = DefWindowProc;
     wc.hInstance = GetModuleHandle(NULL);
     wc.lpszClassName = "IOwind";
 
-    RegisterClass(&wc)
+    RegisterClass(&wc);
 
     // 가짜 GUI 창 생성
-    handle = CreateWindow(
+    HWND handle = CreateWindow(
         "IOwind", "wind", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
         NULL, NULL, GetModuleHandle(NULL), NULL
@@ -1726,8 +1726,9 @@ void register_raw_input() {
 	Rid[3].dwFlags = 0;                 // adds joystick
 	Rid[3].hwndTarget = 0;
 
-    RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
+    RegisterRawInputDevices(Rid, 4, sizeof(RAWINPUTDEVICE));
 	while(OS::iter_running) {
+		MSG msg;
 		while(PeekMessage(&msg, handle, WM_INPUT, WM_INPUT, PM_REMOVE)) {
 			if(msg.message == WM_INPUT){
 				/*GetRawInputData(
