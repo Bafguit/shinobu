@@ -3828,30 +3828,30 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		return _handle_early_window_message(hWnd, uMsg, wParam, lParam);
 	}
 	
-	if (uMsg == WM_CHAR) {
-		const BitField<WinKeyModifierMask> &mods = _get_mods();
+	//if (uMsg == WM_CHAR) {
+	const BitField<WinKeyModifierMask> &mods = _get_mods();
 
-		KeyEvent ke;
-		ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
-		ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-		ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-		ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-		ke.meta = mods.has_flag(WinKeyModifierMask::META);
-		ke.uMsg = uMsg;
-		ke.window_id = window_id;
-		ke.timestamp = OS::get_singleton()->get_ticks_usec();
+	KeyEvent ke;
+	ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+	ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+	ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+	ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+	ke.meta = mods.has_flag(WinKeyModifierMask::META);
+	ke.uMsg = uMsg;
+	ke.window_id = window_id;
+	ke.timestamp = OS::get_singleton()->get_ticks_usec();
 
-		if (ke.uMsg == WM_SYSKEYDOWN) {
-			ke.uMsg = WM_KEYDOWN;
-		}
-		if (ke.uMsg == WM_SYSKEYUP) {
-			ke.uMsg = WM_KEYUP;
-		}
-
-		ke.wParam = wParam;
-		ke.lParam = lParam;
-		key_event_buffer[key_event_pos++] = ke;
+	if (ke.uMsg == WM_SYSKEYDOWN) {
+		ke.uMsg = WM_KEYDOWN;
 	}
+	if (ke.uMsg == WM_SYSKEYUP) {
+		ke.uMsg = WM_KEYUP;
+	}
+
+	ke.wParam = wParam;
+	ke.lParam = lParam;
+	key_event_buffer[key_event_pos++] = ke;
+	//}
 
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
@@ -5022,7 +5022,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				KillTimer(windows[window_id].hWnd, windows[window_id].activate_timer_id);
 				windows[window_id].activate_timer_id = 0;
 			}
-		} break;
+		} break;/*
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		case WM_SYSKEYDOWN:
@@ -5043,6 +5043,32 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			[[fallthrough]];
 		}
+		case WM_CHAR: {
+			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+			KeyEvent ke;
+			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+			ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+			ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+			ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+			ke.meta = mods.has_flag(WinKeyModifierMask::META);
+			ke.uMsg = uMsg;
+			ke.window_id = window_id;
+			ke.timestamp = OS::get_singleton()->get_ticks_usec();
+
+			if (ke.uMsg == WM_SYSKEYDOWN) {
+				ke.uMsg = WM_KEYDOWN;
+			}
+			if (ke.uMsg == WM_SYSKEYUP) {
+				ke.uMsg = WM_KEYUP;
+			}
+
+			ke.wParam = wParam;
+			ke.lParam = lParam;
+			key_event_buffer[key_event_pos++] = ke;
+
+		} break;*/
 		case WM_IME_COMPOSITION: {
 			CANDIDATEFORM cf;
 			cf.dwIndex = 0;
