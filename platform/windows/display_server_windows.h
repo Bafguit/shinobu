@@ -601,12 +601,12 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 public:
-	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, uint64_t msgTime);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
 	LRESULT ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	void add_key_event(MSG msg, LPARAM lParam);
+	static void add_key_event(MSG msg, LPARAM lParam);
 
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);

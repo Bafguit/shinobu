@@ -254,31 +254,13 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
-void DisplayServerWindows::add_key_event(MSG msg, LPARAM lParam) {
-	const BitField<WinKeyModifierMask> &mods = _get_mods();
-	//ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
-
-	KeyEvent ke;
-	ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
-	ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-	ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-	ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-	ke.meta = mods.has_flag(WinKeyModifierMask::META);
-	ke.uMsg = msg.message;
-	ke.timestamp = OS::get_singleton()->get_ticks_usec();
-
-	if (ke.uMsg == WM_SYSKEYDOWN) {
-		ke.uMsg = WM_KEYDOWN;
+void DisplayServerWindows::add_key_event(MSG msg) {
+	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
+	if (ds_win) {
+		return ds_win->WndProc(hWnd, uMsg, wParam, lParam, OS::get_singleton()->get_ticks_usec());
+	} else {
+		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 	}
-	if (ke.uMsg == WM_SYSKEYUP) {
-		ke.uMsg = WM_KEYUP;
-	}
-	
-	ke.wParam = msg.wParam;
-	// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
-	// Bit 30 -> key was previously down, bit 31 -> key is being released.
-	ke.lParam = lParam;
-	key_event_buffer[key_event_pos++] = ke;
 }
 
 // Silence warning due to a COM API weirdness.
@@ -3934,7 +3916,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 // The window procedure for our window class "Engine", used to handle processing of window-related system messages/events.
 // See: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-procedures
-LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, uint64_t msgTime = -1) {
 	//if (drop_events) {
 	//	return DisplayServerWindows::ItrProc(hWnd, uMsg, wParam, lParam);
 	//}
@@ -3959,14 +3941,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	if (!window_created) {
 		// don't let code below operate on incompletely initialized window objects or missing window_id
 		return _handle_early_window_message(hWnd, uMsg, wParam, lParam);
-	}
-
-	uint64_t input_time;
-	if (OS::input_timestamps.size() > 0) {
-		input_time = OS::input_timestamps.front();
-		OS::input_timestamps.pop_front();
-	} else {
-		input_time = 3141592;
 	}
 
 	// Process window messages.
@@ -5135,7 +5109,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = input_time;
+			ke.timestamp = msgTime;
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;

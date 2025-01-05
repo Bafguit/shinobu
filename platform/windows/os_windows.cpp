@@ -1722,7 +1722,8 @@ void ThreadFunc(DWORD mainThreadId, HWND hwnd) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
-			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
+				DisplayServerWindows::add_key_event(msg);
 				//PostThreadMessage(mainThreadId, msg.message, msg.wParam, msg.lParam);
 				//OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 			}
