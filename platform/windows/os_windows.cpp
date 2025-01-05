@@ -1767,12 +1767,12 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
 		MSG msg = {};
 		while(!OS::iter_result) {
 			//OS::input_timestamps.clear();
-			while(OS::iter_running) {
-				while(PeekMessage(&msg, active_window, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
+			//while(OS::iter_running) {
+				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 					DisplayServerWindows::add_key_event(active_window, msg);
 					//OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 				}
-			}
+			//}
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
@@ -1784,6 +1784,8 @@ void OS_Windows::run() {
 	}
 
 	main_loop->initialize();
+
+	OS::iter_result = false;
 	
 	//Main::set_input_update_function(&process_events);
 	std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
@@ -1791,11 +1793,11 @@ void OS_Windows::run() {
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
-		OS::iter_running = true;
+		//OS::iter_running = true;
 
 		OS::iter_result = Main::iteration();
 
-		OS::iter_running = false;
+		//OS::iter_running = false;
 
 		if (OS::iter_result) {
 			break;
