@@ -1686,20 +1686,35 @@ void process_events() {
 		}
 }
 
-/*
+
 
 void register_raw_input() {
+	buffer = new BYTE[163840];
+	
+	WNDCLASS wc = {0};
+    wc.lpfnWndProc = DefWindowProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = "IOwind";
+
+    RegisterClass(&wc)
+
+    // 가짜 GUI 창 생성
+    handle = CreateWindow(
+        "IOwind", "wind", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
+        NULL, NULL, GetModuleHandle(NULL), NULL
+    );
 	RAWINPUTDEVICE Rid[4];
 
-	rid[0].usUsagePage = 0x01; // 마우스
-    rid[0].usUsage = 0x02;
-    rid[0].dwFlags = 0;//RIDEV_NOLEGACY | RIDEV_INPUTSINK;
-    rid[0].hwndTarget = 0;
+	Rid[0].usUsagePage = 0x01; // 마우스
+    Rid[0].usUsage = 0x02;
+    Rid[0].dwFlags = 0;//RIDEV_NOLEGACY | RIDEV_INPUTSINK;
+    Rid[0].hwndTarget = 0;
 
-    rid[1].usUsagePage = 0x01; // 키보드
-    rid[1].usUsage = 0x06;
-    rid[1].dwFlags = 0;// RIDEV_NOLEGACY | RIDEV_INPUTSINK;
-    rid[1].hwndTarget = 0;
+    Rid[1].usUsagePage = 0x01; // 키보드
+    Rid[1].usUsage = 0x06;
+    Rid[1].dwFlags = 0;// RIDEV_NOLEGACY | RIDEV_INPUTSINK;
+    Rid[1].hwndTarget = 0;
         
 	Rid[2].usUsagePage = 0x01;          // HID_USAGE_PAGE_GENERIC
 	Rid[2].usUsage = 0x05;              // HID_USAGE_GENERIC_GAMEPAD
@@ -1712,7 +1727,32 @@ void register_raw_input() {
 	Rid[3].hwndTarget = 0;
 
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
-}*/
+	while(OS::iter_running) {
+		while(PeekMessage(&msg, handle, WM_INPUT, WM_INPUT, PM_REMOVE)) {
+			if(msg.message == WM_INPUT){
+				/*GetRawInputData(
+					(HRAWINPUT)msg.lParam, 
+					RID_INPUT, 
+					buffer, 
+					&(this->bufferSize), 
+					sizeof(RAWINPUTHEADER)
+				);
+				RAWINPUT* raw = (RAWINPUT*)(this->buffer);
+				for (UINT i = 0; i < bufferSize / sizeof(RAWINPUT); i++) {
+					if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+						Godot::print("key pressed");
+						// std::cout << "Key Pressed: " << raw->data.keyboard.VKey << "\n";
+					} else if (raw->header.dwType == RIM_TYPEMOUSE) {
+						Godot::print("mouse moved");
+						// std::cout << "Mouse Movement: " << raw->data.mouse.lLastX << ", " << raw->data.mouse.lLastY << "\n";
+					}
+					raw++;
+				}*/
+				DisplayServerWindows::add_key_event(msg);
+			}
+		}
+	}
+}
 
 void ThreadFunc(DWORD mainThreadId, HWND hwnd) {
 	DWORD currentThreadId = GetCurrentThreadId();
@@ -1745,27 +1785,32 @@ void OS_Windows::run() {
 	}
 
 	main_loop->initialize();
+
+	OS::iter_result = false;
+
+	std::thread ww(&register_raw_input);
 	
 	//Main::set_input_update_function(&process_events);
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
-		OS::iter_running = true;
+		//OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
+		//std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
 
 		OS::iter_result = Main::iteration();
 
-		OS::iter_running = false;
+		//OS::iter_running = false;
 
-		t1.join();
+		//t1.join();
 
 		if (OS::iter_result) {
 			break;
 		}
 	}
 
+	ww.detach();
 
 	main_loop->finalize();
 }
