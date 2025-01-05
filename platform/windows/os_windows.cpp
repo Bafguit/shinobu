@@ -1751,7 +1751,7 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
     wc.lpszClassName = "IOwind";
 
     if (!RegisterClass(&wc)) {
-        Godot::print("Failed to register window class");
+        //Godot::print("Failed to register window class");
         return;
     }
 

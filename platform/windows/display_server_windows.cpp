@@ -3806,6 +3806,27 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 }
 
 LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	WindowID window_id = INVALID_WINDOW_ID;
+	bool window_created = false;
+
+	// Check whether window exists
+	// FIXME this is O(n), where n is the set of currently open windows and subwindows
+	// we should have a secondary map from HWND to WindowID or even WindowData* alias, if we want to eliminate all the map lookups below
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hWnd == hWnd) {
+			window_id = E.key;
+			window_created = true;
+			break;
+		}
+	}
+
+	// WARNING: we get called with events before the window is registered in our collection
+	// specifically, even the call to CreateWindowEx already calls here while still on the stack,
+	// so there is no way to store the window handle in our collection before we get here
+	if (!window_created) {
+		// don't let code below operate on incompletely initialized window objects or missing window_id
+		return _handle_early_window_message(hWnd, uMsg, wParam, lParam);
+	}
 	if (uMsg == WM_INPUT) {
 		UINT dwSize;
 
@@ -3853,7 +3874,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
 
-			mm->set_window_id(window_id);
+			mm->set_window_id(GetWindowId);
 			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
 			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
 			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
