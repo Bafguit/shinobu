@@ -3859,7 +3859,7 @@ LRESULT DisplayServerWindows::ItrProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 #define PHYSICS_TICK	WM_USER+101
 // The window procedure for our window class "Engine", used to handle processing of window-related system messages/events.
 // See: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-procedures
-LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, uint64_t msg_time = -1) {
+LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, uint64_t msg_time = OS::get_singleton()->get_ticks_usec()) {
 	//if (drop_events) {
 	//	return DisplayServerWindows::ItrProc(hWnd, uMsg, wParam, lParam);
 	//}
@@ -4142,11 +4142,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
-							if (msg_time == -1) {
-								ke.timestamp = OS::get_singleton()->get_ticks_usec();
-							} else {
-								ke.timestamp = msg_time;
-							}
+							ke.timestamp = msg_time;
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
@@ -5067,11 +5063,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			if (msg_time == -1) {
-				ke.timestamp = OS::get_singleton()->get_ticks_usec();
-			} else {
-				ke.timestamp = msg_time;
-			}
+			ke.timestamp = msg_time;
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;

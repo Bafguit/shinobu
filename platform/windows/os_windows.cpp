@@ -1745,7 +1745,7 @@ void register_raw_input() {
 }*/
 
 void ThreadFunc(DWORD mainThreadId, HWND active_window) {
-	WNDCLASS wc = {0};
+	/*WNDCLASS wc = {0};
     wc.lpfnWndProc = DefWindowProc;
     wc.hInstance = GetModuleHandle(NULL);
     wc.lpszClassName = "IOwind";
@@ -1760,23 +1760,38 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
         "IOwind", "wind", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
         NULL, NULL, GetModuleHandle(NULL), NULL
-    );
+    );*/
 	DWORD currentThreadId = GetCurrentThreadId();
 	
-	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		MSG msg = {};
 		while(!OS::iter_result) {
 			//OS::input_timestamps.clear();
 			//while(OS::iter_running) {
-				while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
-					TranslateMessage(&msg);
+				while(PeekMessage(&msg, active_window, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
 					DisplayServerWindows::add_key_event(active_window, msg);
 					//OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 				}
-		//	}
+			//}
 		}
-	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
-	//}
+		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
+	}
+}
+
+unsigned __stdcall ThreadProc(HWND hwnd) {
+    //HWND hwnd = (HWND)lpParam;
+
+    // 스레드에서 메인 윈도우의 메시지 루프를 실행
+    MSG msg;
+	
+	while(OS::iter_running) {
+		while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+    return 0;
 }
 
 void OS_Windows::run() {
@@ -1789,16 +1804,18 @@ void OS_Windows::run() {
 	OS::iter_result = false;
 	
 	//Main::set_input_update_function(&process_events);
-	std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
+	//std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
-		//OS::iter_running = true;
+		OS::iter_running = true;
+
+		_beginthreadex(nullptr, 0, ThreadProc, GetActiveWindow(), 0, nullptr);
 
 		OS::iter_result = Main::iteration();
 
-		//OS::iter_running = false;
+		OS::iter_running = false;
 
 		if (OS::iter_result) {
 			break;
@@ -1806,7 +1823,7 @@ void OS_Windows::run() {
 
 	}
 
-	t1.detach();
+	//t1.detach();
 
 
 	main_loop->finalize();
