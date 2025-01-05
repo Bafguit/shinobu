@@ -1744,7 +1744,7 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-void ThreadFunc(DWORD mainThreadId, HWND active_window) {
+void ThreadFunc(DWORD mainThreadId, HWND hwnd) {
 	/*WNDCLASS wc = {0};
     wc.lpfnWndProc = DefWindowProc;
     wc.hInstance = GetModuleHandle(NULL);
@@ -1761,37 +1761,23 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
         CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
         NULL, NULL, GetModuleHandle(NULL), NULL
     );*/
-	DWORD currentThreadId = GetCurrentThreadId();
+	//DWORD currentThreadId = GetCurrentThreadId();
 	
-	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		MSG msg = {};
-		while(!OS::iter_result) {
+		//while(!OS::iter_result) {
 			//OS::input_timestamps.clear();
-			//while(OS::iter_running) {
-				while(PeekMessage(&msg, active_window, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
-					DisplayServerWindows::add_key_event(active_window, msg);
+			while(OS::iter_running) {
+				while(PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+					//DisplayServerWindows::add_key_event(hwnd, msg);
 					//OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 				}
-			//}
-		}
-		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
-	}
-}
-
-unsigned __stdcall ThreadProc(HWND hwnd) {
-    //HWND hwnd = (HWND)lpParam;
-
-    // 스레드에서 메인 윈도우의 메시지 루프를 실행
-    MSG msg;
-	
-	while(OS::iter_running) {
-		while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-
-    return 0;
+			}
+		//}
+	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
+	//}
 }
 
 void OS_Windows::run() {
@@ -1804,18 +1790,20 @@ void OS_Windows::run() {
 	OS::iter_result = false;
 	
 	//Main::set_input_update_function(&process_events);
-	//std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
+	//
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
-
+		
 		OS::iter_running = true;
 
-		_beginthreadex(nullptr, 0, ThreadProc, GetActiveWindow(), 0, nullptr);
+		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
 
 		OS::iter_result = Main::iteration();
 
 		OS::iter_running = false;
+
+		t1.join();
 
 		if (OS::iter_result) {
 			break;
