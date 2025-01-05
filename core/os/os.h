@@ -40,6 +40,7 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
+#include <list>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <thread>
@@ -137,6 +138,7 @@ public:
 	static bool iter_running;
 	static bool iter_result;
 	static uint64_t last_input_ticks;
+	static std::list<uint64_t> input_timestamps;
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }

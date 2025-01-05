@@ -1717,21 +1717,24 @@ void register_raw_input() {
 void ThreadFunc(DWORD mainThreadId) {
 	DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
-		list<MSG> msgs;
+		OS::input_timestamps.clear();
+		std::list<MSG> msgs;
 		while(OS::iter_running) {
 			MSG msg = {};
 
 			while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
+				TranslateMessage(&msg);
 				msgs.push_back(msg);
+				OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 			}
 		}
 		if (msgs.size() > 0) {
 			for (int i = 0; i < msgs.size(); i++) {
-				MSG msg = msg.front();
-				PostThreadMessage(mainThreadId, msg.message, msg.wParam, OS::get_singleton()->get_ticks_usec());
-				msg.pop_front();
+				MSG msg = msgs.front();
+				PostThreadMessage(mainThreadId, msg.message, msg.wParam, msg.lParam);
+				msgs.pop_front();
 			}
-			msg.clear();
+			msgs.clear();
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}

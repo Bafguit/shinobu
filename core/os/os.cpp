@@ -54,6 +54,7 @@ uint64_t OS::target_ticks = 0;
 uint64_t OS::delay_ticks = 0;
 uint64_t OS::input_update_delay = 500;
 uint64_t OS::last_input_ticks = 0;
+std::list<uint64_t> OS::input_timestamps;
 bool OS::iter_running = false;
 bool OS::iter_result = true;
 

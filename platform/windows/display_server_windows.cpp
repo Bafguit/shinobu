@@ -5119,6 +5119,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 
+			uint64_t input_time;
+			if (OS::input_timestamps.size() > 0) {
+				input_time = OS::input_timestamps.front();
+				OS::input_timestamps.pop_front();
+			} else {
+				input_time = -1;
+			}
+
 			KeyEvent ke;
 			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
 			ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
@@ -5127,7 +5135,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = lParam;
+			ke.timestamp = input_time;
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
