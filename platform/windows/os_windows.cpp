@@ -1766,10 +1766,8 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
 	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 	MSG msg = {};
 	while(!OS::iter_result) {
-		while(OS::iter_running) {
-			while(PeekMessage(&msg, handle, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-				DisplayServerWindows::add_key_event(handle, msg);
-			}
+		while(GetMessage(&msg, handle, WM_INPUT, WM_INPUT, PM_REMOVE)) {
+			DisplayServerWindows::add_key_event(handle, msg);
 		}
 	}
 	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
@@ -1800,7 +1798,7 @@ void OS_Windows::run() {
 		}
 	}
 
-	t1.join();
+	t1.detach();
 
 
 	main_loop->finalize();
