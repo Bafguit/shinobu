@@ -52,6 +52,7 @@
 
 #include <thread>
 
+#include <list>
 #include <io.h>
 #include <shellapi.h>
 #include <stdio.h>

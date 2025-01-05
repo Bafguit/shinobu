@@ -1717,12 +1717,21 @@ void register_raw_input() {
 void ThreadFunc(DWORD mainThreadId) {
 	DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+		list<MSG> msgs;
 		while(OS::iter_running) {
 			MSG msg = {};
 
 			while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
-				PostThreadMessage(mainThreadId, msg.message, msg.wParam, OS::get_singleton()->get_ticks_usec());
+				msgs.push_back(msg);
 			}
+		}
+		if (msgs.size() > 0) {
+			for (int i = 0; i < msgs.size(); i++) {
+				MSG msg = msg.front();
+				PostThreadMessage(mainThreadId, msg.message, msg.wParam, OS::get_singleton()->get_ticks_usec());
+				msg.pop_front();
+			}
+			msg.clear();
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
