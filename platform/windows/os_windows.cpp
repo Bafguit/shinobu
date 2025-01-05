@@ -1720,8 +1720,8 @@ void ThreadFunc(DWORD mainThreadId) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
-			while(PeekMessage(&msg, nullptr, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-				PostThreadMessage(mainThreadId, WM_INPUT, msg.time, msg.lParam)
+			while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
+				PostThreadMessage(mainThreadId, msg.message, msg.wParam, OS::get_singleton()->get_ticks_usec());
 			}
 		}
 		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
