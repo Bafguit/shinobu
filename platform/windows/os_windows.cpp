@@ -1769,6 +1769,7 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
 			//OS::input_timestamps.clear();
 			//while(OS::iter_running) {
 				while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
+					TranslateMessage(&msg);
 					DisplayServerWindows::add_key_event(active_window, msg);
 					//OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 				}
