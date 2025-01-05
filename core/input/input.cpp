@@ -144,6 +144,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
+	ClassDB::bind_method(D_METHOD("set_keep_input_process", "enable"), &Input::set_keep_input_process);
+	ClassDB::bind_method(D_METHOD("is_keeping_input_process"), &Input::is_keeping_input_process);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
 	ClassDB::bind_method(D_METHOD("set_emulate_mouse_from_touch", "enable"), &Input::set_emulate_mouse_from_touch);
 	ClassDB::bind_method(D_METHOD("is_emulating_mouse_from_touch"), &Input::is_emulating_mouse_from_touch);
@@ -152,6 +154,7 @@ void Input::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_input_process"), "set_keep_input_process", "is_keeping_input_process");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
 
@@ -1072,6 +1075,14 @@ void Input::set_use_accumulated_input(bool p_enable) {
 
 bool Input::is_using_accumulated_input() {
 	return use_accumulated_input;
+}
+
+void Input::set_keep_input_process(bool p_enable) {
+	keep_input_process = p_enable;
+}
+
+bool Input::is_keeping_input_process() {
+	return keep_input_process;
 }
 
 void Input::release_pressed_events() {

@@ -130,6 +130,7 @@ private:
 	bool emulate_mouse_from_touch = false;
 	bool agile_input_event_flushing = false;
 	bool use_accumulated_input = true;
+	bool keep_input_process = false;
 
 	int mouse_from_touch_index = -1;
 
@@ -371,6 +372,8 @@ public:
 	void set_agile_input_event_flushing(bool p_enable);
 	void set_use_accumulated_input(bool p_enable);
 	bool is_using_accumulated_input();
+	void set_keep_input_process(bool p_enable);
+	bool is_keeping_input_process();
 
 	void release_pressed_events();
 

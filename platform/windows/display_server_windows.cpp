@@ -3016,22 +3016,20 @@ void DisplayServerWindows::process_events() {
 	}
 
 	_THREAD_SAFE_LOCK_
-	if (Input::get_singleton()->is_agile_input_event_flushing()) {
-		DWORD dwStart;
-		dwStart = GetTickCount();
+	if (Input::get_singleton()->is_keeping_input_process()) {
+		uint64_t dwStart = OS::get_singleton()->get_ticks_usec();
+		uint64_t ticks = dwStart;
 		
-		while(GetTickCount() - dwStart < OS::delay_ticks / 1000) {
+		while(ticks - dwStart < OS::delay_ticks) {
 			msg = {};
-
-			const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-			if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 0)) {
+			if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 100)) {
 				OS::last_input_ticks = ticks;
 				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
 			}
-
+			ticks = OS::get_singleton()->get_ticks_usec();
 		}
 	} else {
 		msg = {};

@@ -1678,12 +1678,16 @@ String OS_Windows::get_processor_name() const {
 }
 
 void process_events() {
-	MSG msg = {};
-
-		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+	if(Input::get_singleton()->is_keeping_input_process()) {
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		if(ticks >= OS::last_input_ticks + MAX(OS::input_update_delay, 100)) {
+			OS::last_input_ticks = ticks;
+			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 		}
+	}
 }
 
 void OS_Windows::run() {
@@ -1698,10 +1702,7 @@ void OS_Windows::run() {
 	while (true) {
 		DisplayServer::get_singleton()->process_events();
 
-		OS::iter_result = Main::iteration();
-		OS::iter_running = false;
-
-		if (OS::iter_result) {
+		if (Main::iteration()) {
 			break;
 		}
 	}
