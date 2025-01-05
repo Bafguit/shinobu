@@ -1714,7 +1714,7 @@ void register_raw_input() {
     RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))
 }*/
 
-void ThreadFunc(DWORD mainThreadId) {
+void ThreadFunc(DWORD mainThreadId, HWND hwnd) {
 	DWORD currentThreadId = GetCurrentThreadId();
 	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
 		OS::input_timestamps.clear();
@@ -1722,8 +1722,7 @@ void ThreadFunc(DWORD mainThreadId) {
 		while(OS::iter_running) {
 			MSG msg = {};
 
-			while(PeekMessage(&msg, nullptr, WM_SYSKEYUP, WM_CHAR, PM_REMOVE)) {
-				TranslateMessage(&msg);
+			while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 				msgs.push_back(msg);
 				OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
 			}
@@ -1731,7 +1730,7 @@ void ThreadFunc(DWORD mainThreadId) {
 		if (msgs.size() > 0) {
 			for (int i = 0; i < msgs.size(); i++) {
 				MSG msg = msgs.front();
-				PostThreadMessage(mainThreadId, msg.message, msg.wParam, msg.lParam);
+				PostMessage(hwnd, msg.message, msg.wParam, msg.lParam);
 				msgs.pop_front();
 			}
 			msgs.clear();
@@ -1754,7 +1753,7 @@ void OS_Windows::run() {
 
 		OS::iter_running = true;
 
-		std::thread t1(&ThreadFunc, GetCurrentThreadId());
+		std::thread t1(&ThreadFunc, GetCurrentThreadId(), GetActiveWindow());
 
 		OS::iter_result = Main::iteration();
 

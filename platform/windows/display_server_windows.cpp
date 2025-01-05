@@ -3961,6 +3961,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		return _handle_early_window_message(hWnd, uMsg, wParam, lParam);
 	}
 
+	uint64_t input_time;
+	if (OS::input_timestamps.size() > 0) {
+		input_time = OS::input_timestamps.front();
+		OS::input_timestamps.pop_front();
+	} else {
+		input_time = 3141592;
+	}
+
 	// Process window messages.
 	switch (uMsg) {
 		case WM_MENUCOMMAND: {
@@ -5118,14 +5126,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_CHAR: {
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
-
-			uint64_t input_time;
-			if (OS::input_timestamps.size() > 0) {
-				input_time = OS::input_timestamps.front();
-				OS::input_timestamps.pop_front();
-			} else {
-				input_time = -1;
-			}
 
 			KeyEvent ke;
 			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
