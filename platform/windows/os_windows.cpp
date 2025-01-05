@@ -1745,7 +1745,7 @@ void register_raw_input() {
 }*/
 
 void ThreadFunc(DWORD mainThreadId, HWND active_window) {
-	WNDCLASS wc = {0};
+	/*WNDCLASS wc = {0};
     wc.lpfnWndProc = DefWindowProc;
     wc.hInstance = GetModuleHandle(NULL);
     wc.lpszClassName = "IOwind";
@@ -1760,21 +1760,21 @@ void ThreadFunc(DWORD mainThreadId, HWND active_window) {
         "IOwind", "wind", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
         NULL, NULL, GetModuleHandle(NULL), NULL
-    );
+    );*/
 	DWORD currentThreadId = GetCurrentThreadId();
 	
-	//if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
-	MSG msg = {};
-	while(!OS::iter_result) {
-		while(OS::iter_running) {
-			while(GetMessage(&msg, handle, WM_SYSKEYUP, WM_CHAR)) {
-				DisplayServerWindows::add_key_event(handle, msg);
-				print_line("Got Message!")
+	if(AttachThreadInput(currentThreadId, mainThreadId, TRUE)) {
+		MSG msg = {};
+		while(!OS::iter_result) {
+			OS::input_timestamps.clear();
+			while(OS::iter_running) {
+				while(PeekMessage(&msg, active_window, WM_SYSKEYUP, WM_CHAR, PM_NOREMOVE)) {
+					OS::input_timestamps.push_back(OS::get_singleton()->get_ticks_usec());
+				}
 			}
 		}
+		AttachThreadInput(currentThreadId, mainThreadId, FALSE);
 	}
-	//	AttachThreadInput(currentThreadId, mainThreadId, FALSE);
-	//}
 }
 
 void OS_Windows::run() {
@@ -1799,6 +1799,7 @@ void OS_Windows::run() {
 		if (OS::iter_result) {
 			break;
 		}
+
 	}
 
 	t1.detach();

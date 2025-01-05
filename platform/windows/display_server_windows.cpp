@@ -5022,7 +5022,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				KillTimer(windows[window_id].hWnd, windows[window_id].activate_timer_id);
 				windows[window_id].activate_timer_id = 0;
 			}
-		} break;/*
+		} break;
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		case WM_SYSKEYDOWN:
@@ -5045,6 +5045,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_CHAR: {
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+			uint64_t times = -1;
+			if (OS::input_timestamps.size() > 0) {
+				times = OS::input_timestamps.pop_front();
+			} else {
+				times = OS::get_singleton()->get_ticks_usec();
+			}
+
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 
 			KeyEvent ke;
@@ -5055,7 +5063,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
-			ke.timestamp = OS::get_singleton()->get_ticks_usec();
+			ke.timestamp = times;
 
 			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
@@ -5068,7 +5076,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.lParam = lParam;
 			key_event_buffer[key_event_pos++] = ke;
 
-		} break;*/
+		} break;
 		case WM_IME_COMPOSITION: {
 			CANDIDATEFORM cf;
 			cf.dwIndex = 0;
